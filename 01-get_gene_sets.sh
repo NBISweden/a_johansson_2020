@@ -7,9 +7,9 @@
  
 # User defined variables
 # Currently for hg19 (GRCh37)
-FTP_GENCODE="ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/GRCh37_mapping/gencode.v26lift37.annotation.gff3.gz"
-FTP_ENSEMBL="ftp://ftp.ensembl.org/pub/grch37/update/regulation/homo_sapiens/homo_sapiens.GRCh37.Regulatory_Build.regulatory_features.20161117.gff.gz"
- 
+FTP_GENCODE="ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/GRCh37_mapping/gencode.v35lift37.annotation.gff3.gz"
+FTP_ENSEMBL="ftp://ftp.ensembl.org/pub/grch37/current/regulation/homo_sapiens/homo_sapiens.GRCh37.Regulatory_Build.regulatory_features.20191101.gff.gz"
+
 # Project variables
 PROJDIR=`pwd`
 RESOURCES_DIR=${PROJDIR}"/resources"
@@ -29,6 +29,7 @@ if [ ! -f ${GENCODE_FILE} ]; then
 fi
  
 # Extract exonic regions only, filter out pseudogenes and antisense RNAs and save them in a bed file
+echo "Processing ${GENCODE_FILE}..."
 if [ ! -f "exons.bed" ]; then
     awk '/^chr/ {print}' ${GENCODE_FILE}| \
     awk -F"[\t;:]" '{sub(/gene_type=/,"",$15); sub(/gene_name=/,"",$16); sub(/gene_id=/,"",$13)} $3=="exon" {print $1,$4-1,$5,$7,$3,$15,$16,$13}' | \
@@ -45,9 +46,9 @@ if [ ! -f "CDS.bed" ]; then
         sed 's/chr//' | \
         awk '$3=="CDS" {OFS=" ";print $1"_"$4"_"$5,$1,$4-1,$5,$7,"CDS",$9}' | \
         grep -v ".*pseudogene.*"  | \
-        sed 's/ID=.*gene_id=//' | \
-         sed 's/;.*gene_type=/\t/' | \
-        sed 's/;.*gene_name=/\t/' | \
+        sed "s/ID=.*gene_id=//" | \
+        sed "s/;.*gene_type=/    /" | \
+        sed "s/;.*gene_name=/    /" | \
         sed 's/;.*//'  | \
         sort -k1,1 -u | \
         awk '{print $2,$3,$4,$5,$6,$8,$7,$9}' | \
