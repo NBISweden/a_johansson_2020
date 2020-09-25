@@ -4,6 +4,8 @@ library(tidyverse)
 library(ggplot2)
 data(vcfR_example)
 source('src/get_effects.R')
+source('src/plot_effects.R')
+source('src/impute_G.R')
 
 perc_negative_common <- 0
 perc_negative_rare <- 0.2
@@ -23,7 +25,9 @@ rare <- get_effects(maf = maf, thr = thr_common_rare,
 G <- as.tibble(vcfR::vcfR2genind(vcf)[rare$marker_idx, ]) 
 G <- G %>% mutate_all(~ stringr::str_count(string = ., "1"))
 G <- t(as.matrix(G))
-
-
+# Impute
+G_imp <- impute_G(G = G, maf = maf)
+y <- G_imp %*% rare$effects + rnorm(n = dim(G_imp)[1], mean = 0, sd = 1)
+plot(y)
 
   
