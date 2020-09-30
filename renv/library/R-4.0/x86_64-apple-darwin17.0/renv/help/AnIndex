@@ -1,11 +1,13 @@
 renv-package	renv-package
 activate	activate
+checkout	checkout
 clean	clean
 config	config
 consent	consent
 deactivate	deactivate
 dependencies	dependencies
 diagnostics	diagnostics
+embed	embed
 equip	equip
 history	history
 hydrate	hydrate

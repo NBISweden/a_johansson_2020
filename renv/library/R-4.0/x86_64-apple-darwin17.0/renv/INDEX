@@ -1,10 +1,12 @@
 activate                Activate a Project
+checkout                Checkout a Repository
 clean                   Clean a Project
 config                  User-Level Configuration of renv
 consent                 Consent to usage of renv
 deactivate              Deactivate a Project
 dependencies            Find R Package Dependencies in a Project
 diagnostics             Print a Diagnostics Report
+embed                   Embed a Lockfile
 equip                   Install Required System Libraries
 history                 View Lockfile History
 hydrate                 Hydrate a Project

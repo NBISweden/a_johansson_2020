@@ -339,6 +339,22 @@ download files from the internet (respecting the R options
 can also provide their own download function, provided its signature matches
 that of `utils::download.file()`.
 
+You can also instruct `renv` to use a different download method by setting
+the `RENV_DOWNLOAD_FILE_METHOD` environment variable. For example:
+
+```
+# use Windows' internal download machinery
+Sys.setenv(RENV_DOWNLOAD_FILE_METHOD = "wininet")
+
+# use R's bundled libcurl implementation
+Sys.setenv(RENV_DOWNLOAD_FILE_METHOD = "libcurl")
+```
+
+Note that other features (e.g. authentication) may not be supported when
+using an alternative download file method -- you will have to configure
+the downloader yourself if that is required. See `?download.file` for more
+details.
+
 
 ### Proxies
 
@@ -524,6 +540,39 @@ Packrat to `renv`. See the `?migrate` documentation for more details. In
 essence, calling `renv::migrate("<project path>")` will be enough to
 migrate the Packrat library and lockfile such that they can then be
 used by `renv`.
+
+
+## Uninstalling renv
+
+If you find `renv` isn't the right fit for your project, deactivating and
+uninstalling it is easy.
+
+- To deactivate `renv` in a project, use `renv::deactivate()`. This removes
+  the `renv` auto-loader from the project `.Rprofile`, but doesn't touch any
+  other `renv` files used in the project. If you'd like to later re-activate
+  `renv`, you can do so with `renv::activate()`.
+  
+- To remove `renv` from a project, use `renv::deactivate()` to first remove
+  the `renv` auto-loader from the project `.Rprofile`, then delete the project's
+  `renv` folder and `renv.lock` lockfile as desired.
+
+If you want to completely remove any installed `renv` infrastructure components
+from your entire system, you can do so with the following R code:
+
+```
+root <- renv::paths$root()
+unlink(root, recursive = TRUE)
+```
+
+The `renv` package can then also be uninstalled via:
+
+```
+utils::remove.packages("renv")
+```
+
+Note that if you've customized any of `renv`'s infrastructure paths as described
+in `?renv::paths`, then you'll need to find and remove those customized folders
+as well.
 
 
 ## Future Work

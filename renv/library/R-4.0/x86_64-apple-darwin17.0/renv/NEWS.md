@@ -1,4 +1,97 @@
 
+# renv 0.12.0 (UNRELEASED)
+
+* `renv` now uses R's internal tar implementation by default on Windows. This is
+  done to avoid issues that may occur when a version of `tar.exe` on the `PATH`
+  exists, but does not accept Windows-style paths. The `TAR` environment
+  variable can be set if one needs to explicitly force the use of a particular
+  `tar.exe` executable. (#521)
+
+* `renv` now prepends `renv (<version>)` to the user agent string. This should
+  help ensure that package binaries are located when installing packages from
+  RSPM outside of RStudio. (#520)
+
+* `renv` now uses a task callback to detect mutations to the project library
+  when the `auto.snapshot` configuration option is enabled. This will help
+  ensure that automatic snapshots occur when packages are installed via a
+  mechanism not explicitly understood by `renv`. (#501)
+
+* `renv` now treats the user + site libraries as package sources during a
+  restore. If `renv` sees that a package already installed in one of these
+  libraries is compatible with the record requested via `renv::install()` or
+  `renv::restore()`, that copy of the package will be copied and used. (#492)
+  
+* `renv` now performs a lighter-weight check as to whether the project lockfile
+  is synchronized with the project library on load. The default value for the
+  `synchronized.check` config option has been changed back to `TRUE`. (#496)
+
+* `renv` now handles the `remotes` syntax for installing packages lying within
+  the sub-directory of a GitHub repository; that is,
+  `renv::install("user/repo/subdir")` should work as expected. (#497)
+
+* Fixed an issue where `renv` did not construct the correct URL for packages to
+  be installed from Bitbucket remotes. (#494)
+
+* Fixed an issue where the `RENV_PATHS_PREFIX` environment variable was
+  inappropriately normalized when `renv` was loaded. (#465)
+  
+# renv 0.11.0
+
+* Fixed an issue where `renv::install(..., type = "binary")` would
+  still attempt to install packages from sources in some cases. (#461)
+  
+* `renv` now always writes `renv/.gitignore`, to ensure that the appropriate
+  directories are ignored for projects which initialize `git` after `renv`
+  itself is initialized. (#462)
+
+* R Markdown documents with the `.Rmarkdown` file extension are now parsed for
+  dependencies.
+
+* Fixed an issue where setting the `external.libraries` configuration option
+  would trigger a warning. (#452)
+
+* Improved handling of unicode paths on Windows. (#451)
+
+* `renv::snapshot(project = <path>)` now properly respects `.gitignore` /
+  `.renvignore` files, even when that project has not yet been explicitly
+  initialized yet. (#439)
+  
+* The default value of the `synchronized.check` option has been changed from
+  TRUE to FALSE.
+
+* Fixed an issue where packages downloaded from Bitbucket and GitLab did not
+  record the associated commit hash.
+
+* Fixed an issue where attempting to install packages from GitLab could fail
+  to install the correct version of the package. (#436)
+
+* `renv::snapshot()` now preserves records in a lockfile that are only
+  available for a different operating system. This should make it easier
+  to share lockfiles that make use of platform-specific packages. (#419)
+
+* `renv` better handles files that are removed during an invocation to
+  `renv::dependencies()`. (#429)
+
+* The configuration option `install.staged` has been renamed to
+  `install.transactional`, to better reflect its purpose. `install.staged`
+  remains supported as a deprecated alias.
+
+* Fixed an issue where `renv` could fail to parse non-ASCII content on Windows.
+  (#421)
+
+* `renv::update()` gains the `exclude` argument, useful in cases where one
+  would like to update all packages used in a project, except for a small
+  subset of excluded packages. (#425)
+
+* `renv::update()` now respects the project `ignored.packages` setting. (#425)
+
+* Fixed an issue where RSPM binary URL transformations could fail for
+  Ubuntu Trusty. (#423)
+
+* `renv` now records the `OS_type` reported in a package's `DESCRIPTION` file
+  (if any), and ignores packages incompatible with the current operating
+  system during restore. (#394)
+
 # renv 0.10.0
 
 * `renv::install()` gains the `type` argument, used to control whether `renv`

@@ -1,224 +1,272 @@
 <!DOCTYPE html>
+
 <html>
+
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
 
 <title>Collaborating with renv</title>
 
-<script type="text/javascript">
-window.onload = function() {
-  var imgs = document.getElementsByTagName('img'), i, img;
-  for (i = 0; i < imgs.length; i++) {
-    img = imgs[i];
-    // center an image if it is the only element of its parent
-    if (img.parentElement.childElementCount === 1)
-      img.parentElement.style.textAlign = 'center';
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
   }
-};
+});
 </script>
 
 
 
 
 
-<style type="text/css">
-body, td {
-   font-family: sans-serif;
-   background-color: white;
-   font-size: 13px;
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
 }
-
-body {
-  max-width: 800px;
-  margin: auto;
-  padding: 1em;
-  line-height: 20px;
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
 }
-
-tt, code, pre {
-   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
 }
-
-h1 {
-   font-size:2.2em;
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
 }
-
-h2 {
-   font-size:1.8em;
+#TOC ul ul {
+margin-left: -2em;
 }
-
-h3 {
-   font-size:1.4em;
+#TOC li {
+line-height: 16px;
 }
-
-h4 {
-   font-size:1.0em;
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
 }
-
-h5 {
-   font-size:0.9em;
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
 }
-
-h6 {
-   font-size:0.8em;
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
 }
-
-a:visited {
-   color: rgb(50%, 0%, 50%);
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
 }
-
-pre, img {
-  max-width: 100%;
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
 }
 pre {
-  overflow-x: auto;
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
 }
-pre code {
-   display: block; padding: 0.5em;
+pre:not([class]) {
+background-color: #f7f7f7;
 }
-
 code {
-  font-size: 92%;
-  border: 1px solid #ccc;
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
 }
-
-code[class] {
-  background-color: #F8F8F8;
+p > code, li > code {
+padding: 2px 0px;
 }
-
-table, td, th {
-  border: none;
+div.figure {
+text-align: center;
 }
-
-blockquote {
-   color:#666666;
-   margin:0;
-   padding-left: 1em;
-   border-left: 0.5em #EEE solid;
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
 }
-
-hr {
-   height: 0px;
-   border-bottom: none;
-   border-top-width: thin;
-   border-top-style: dotted;
-   border-top-color: #999999;
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
 }
-
-@media print {
-   * {
-      background: transparent !important;
-      color: black !important;
-      filter:none !important;
-      -ms-filter: none !important;
-   }
-
-   body {
-      font-size:12pt;
-      max-width:100%;
-   }
-
-   a, a:visited {
-      text-decoration: underline;
-   }
-
-   hr {
-      visibility: hidden;
-      page-break-before: always;
-   }
-
-   pre, blockquote {
-      padding-right: 1em;
-      page-break-inside: avoid;
-   }
-
-   tr, img {
-      page-break-inside: avoid;
-   }
-
-   img {
-      max-width: 100% !important;
-   }
-
-   @page :left {
-      margin: 15mm 20mm 15mm 10mm;
-   }
-
-   @page :right {
-      margin: 15mm 10mm 15mm 20mm;
-   }
-
-   p, h2, h3 {
-      orphans: 3; widows: 3;
-   }
-
-   h2, h3 {
-      page-break-after: avoid;
-   }
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
 }
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
 </style>
+
 
 
 
 </head>
 
 <body>
-<p>When you want to share a project with other collaborators, you may want to
-ensure everyone is working with the same environment &ndash; otherwise, code in the
-project may unexpectedly fail to run because of changes in behavior between
-different versions of the packages in use. You can use <code>renv</code> to help make
-this possible.</p>
 
+
+
+
+<h1 class="title toc-ignore">Collaborating with renv</h1>
+
+
+
+<p>When you want to share a project with other collaborators, you may want to ensure everyone is working with the same environment – otherwise, code in the project may unexpectedly fail to run because of changes in behavior between different versions of the packages in use. You can use <code>renv</code> to help make this possible.</p>
+<div id="collaborating-with-renv" class="section level2">
 <h2>Collaborating with renv</h2>
-
-<p>When using <code>renv</code>, the packages used in your project will be recorded into a
-lockfile, <code>renv.lock</code>. Because <code>renv.lock</code> records the exact versions of R
-packages used within a project, if you share that file with your collaborators,
-they will be able to use <code>renv::init()</code> to initialize your project with exactly
-the same R packages as recorded in the lockfile. This implies the following
-workflow for collaboration:</p>
-
-<ol>
-<li><p>Select a way to share your project sources. The recommended way to do so is
-with a version control system alongside a public repository; e.g.
-<a href="https://git-scm.com/">git</a> with <a href="https://github.com/">GitHub</a>, but
-many other options are available.</p></li>
-<li><p>Make sure your project is initialized with <code>renv</code> by calling <code>renv::init()</code>.</p></li>
-<li><p>Share your project sources, alongside the generated lockfile <code>renv.lock</code>.</p></li>
+<p>If you’re planning to collaborate with others using <code>renv</code>, we recommend the following steps to get started:</p>
+<ol style="list-style-type: decimal">
+<li><p>Select a way to share your project sources. We recommend using a version control system alongside a public repository; e.g. <a href="https://git-scm.com/">git</a> with <a href="https://github.com/">GitHub</a>, but many other options are available.</p></li>
+<li><p>One user (perhaps yourself) should explicitly initialize <code>renv</code> in the project, via <code>renv::init()</code>. This will create the initial <code>renv</code> lockfile, and also write the <code>renv</code> auto-loaders to the project’s <code>.Rprofile</code> and <code>renv/activate.R</code>. These will ensure the right version of <code>renv</code> is downloaded and installed for your collaborators when they start in this project.</p></li>
+<li><p>Share your project sources, alongside the generated lockfile <code>renv.lock</code>. Be sure to also share the generated auto-loaders in <code>.Rprofile</code> and <code>renv/activate.R</code>.</p></li>
+<li><p>When a collaborator first launches in this project, <code>renv</code> should automatically bootstrap itself, thereby downloading and installing the appropriate version of <code>renv</code> into the project library. After this has completed, they can then use <code>renv::restore()</code> to restore the project library locally on their machine.</p></li>
 </ol>
-
-<p>After your collaborators have received your <code>renv.lock</code> lockfile, they can then
-also execute <code>renv::init()</code> to initialize their project with the packages
-declared in that lockfile into their own private project library. By doing this,
-they will now be able to work within your project using the exact same R
-packages that you were when <code>renv.lock</code> was generated.</p>
-
-<p>For more information on collaboration strategies, please visit
-<a href="https://environments.rstudio.com/">environments.rstudio.com</a>.</p>
-
+<p>For more information on collaboration strategies, please visit <a href="https://environments.rstudio.com/">environments.rstudio.com</a>.</p>
+</div>
+<div id="updating-the-lockfile" class="section level2">
 <h2>Updating the Lockfile</h2>
+<p>While working on a project, you or your collaborators may need to update or install new packages in your project. When this occurs, you’ll also want to ensure your collaborators are then using the same newly-installed packages. In general, the process looks like this:</p>
+<ol style="list-style-type: decimal">
+<li><p>A user installs, or updates, one or more packages in their local project library;</p></li>
+<li><p>That user calls <code>renv::snapshot()</code> to update the <code>renv.lock</code> lockfile;</p></li>
+<li><p>That user then shares the updated version of <code>renv.lock</code> with their collaborators;</p></li>
+<li><p>Other collaborators then call <code>renv::restore()</code> to install the packages specified in the newly-updated lockfile.</p></li>
+</ol>
+<p>A bit of care is required if collaborators wish to update the shared <code>renv.lock</code> lockfile concurrently – in particular, if multiple collaborators are installing new packages and updating their own local copy of the lockfile, then conflicts would need to be sorted out afterwards.</p>
+<p>One way to guard against this it to use a version control system, and have all collaborators work off the same branch. This way, if someone needs to update <code>renv.lock</code> in the public repository, all collaborators will see that updated lockfile and will gain access to it next time they pull those changes. Depending on the size of your team, you may want to ensure any changes to <code>renv.lock</code> are communicated so that everyone knows and understands when and why packages have been installed or updated.</p>
+</div>
 
-<p>While working on a project, you or your collaborators may need to update or
-install new packages in your project. The workflow remains the same as before &ndash;
-after installing these new packages, you can share the updated lockfile with
-your collaborators, and request that they execute <code>renv::init()</code> to
-synchronize their library with the lockfile. Or, if the project has already
-been initialized on their machine via a prior call to <code>renv::init()</code>, then they
-can simply execute <code>renv::restore()</code>.</p>
 
-<p>A bit of care needs to be taken if your collaborators attempt to update packages
-independently. It is recommended that a single &#39;source of truth&#39; is used for the
-package sources and <code>renv.lock</code>, to avoid different collaborators ending up with
-different lockfiles &ndash; or even, different versions of the project sources!</p>
 
-<p>The simplest way to guard against this it to use a version control system, and
-have all collaborators work off the same branch. This way, if someone needs to
-update <code>renv.lock</code> in the public repository, all collaborators will see that
-updated lockfile and will gain access to it next time they pull those changes.
-Depending on the size of your team, you may want to ensure any changes to
-<code>renv.lock</code> are communicated so that everyone knows and understands when and
-why packages have been installed or updated.</p>
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 
 </body>
-
 </html>
