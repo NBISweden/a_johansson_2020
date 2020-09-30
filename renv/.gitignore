@@ -1,6 +1,0 @@
-library/
-python/
-staging/
-activate.R
-renv/*
-/renv/*
