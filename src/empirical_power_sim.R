@@ -6,6 +6,8 @@ data(vcfR_example)
 source('R/get_effects.R')
 source('R/plot_effects.R')
 source('R/impute_G.R')
+source('R/get_genotypes.R')
+source('R/fix_allele_encoding.R')
 
 perc_negative_common <- 0
 perc_negative_rare <- 0.2
@@ -22,12 +24,20 @@ rare <- get_effects(maf = maf, thr = thr_common_rare,
                       below = T,
                       perc_negative = perc_negative_rare)
 
-G <- as_tibble(vcfR::vcfR2genind(vcf)@tab[,rare$marker_idx])
-G <- G %>% mutate_all(~ stringr::str_count(string = ., "1"))
-G <- t(as.matrix(G))
-# Impute
-G_imp <- impute_G(G = G, maf = maf)
+G <- get_genotypes(x = vcf, marker_names = names(rare$marker_idx)) %>%
+  fix_allele_encoding() %>%
+  impute_G(maf = maf)
+
+# Create a test
+tmp <- G[,1]
+tmp[tmp == 0] <- 3
+tmp[tmp == 2] <- 0
+tmp[tmp == 3] <- 2
+G[,1] <- tmp
+
+
 y <- G_imp %*% rare$effects + rnorm(n = dim(G_imp)[1], mean = 0, sd = 1)
 plot(y)
+
 
 
