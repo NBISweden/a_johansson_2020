@@ -36,8 +36,9 @@ tmp[tmp == 3] <- 2
 G[,1] <- tmp
 
 
-y <- G_imp %*% rare$effects + rnorm(n = dim(G_imp)[1], mean = 0, sd = 1)
-plot(y)
-
+y <- G %*% rare$effects + rnorm(n = dim(G)[1], mean = 0, sd = 1)
+plot(y, 1:dim(G)[1], las = 1, cex.axis = .7, ylab="Individual", xlab="Phenotype")
+abline(v=0, col="grey")
+grid()
 
 
