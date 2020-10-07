@@ -3,7 +3,7 @@
 #' the function randomly selects N markers below or above provided maf threshold (default 1%) and assigns effect of a size sampled
 #' from Beta distribution with given parameters so that the magnitude of the effect depends on the allele frequency. Desired fraction
 #' of the effects will be negative. Monomorphic markers with `maf = 0` will be automatically excluded from sampling!
-#' @author Marcin Kierczak <marcin.kierczak@scilifelab.se>
+#' @author Marcin Kierczak <marcin.kierczak_NO_SPAM_scilifelab.se>
 #' @param maf - vector of minor-allele frequencies
 #' @param N - number of markers to be assigned an effect
 #' @param shape12 - a two element vector of Beta distribution shapes.
