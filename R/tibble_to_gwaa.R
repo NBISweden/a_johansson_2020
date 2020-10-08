@@ -1,4 +1,4 @@
-#' @title Convert tibble with genotypes to GenABEL internal raw genotype format and writ it into a file.
+#' @title Convert tibble with genotypes along with a vector of phenotypes to GenABEL internal raw gwaa.data format.
 #' @author Marcin Kierczak <marcin.kierczak_NO_SPAM_scilifelab.se>
 #' @details Convert a tibble with the following shape:
 #' test_data <- tibble(
@@ -19,12 +19,13 @@
 #' `strand` is currently ignored, but required as a separate column.
 #' Genotypes have to be coded as counts of the MINOR ALLELE:
 #' AA - 0, Aa - 1 and aa - 2, NA values are allowed.
-#' @return Nothing is returned
+#' @return gwaa.data-class object
 #' @param x tibble with genotypes as described in the Details section
-#' @param output name of the file to write output to
+#' @param sex a vector of sex values: 0 - female, 1 - male
+#' @param trait a vector of trait values
 #' @param progress report progress every N individuals
 #' @export
-tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
+tibble_to_gwaa <- function(x, sex, trait, progress = 1) {
   #   test_data <- tibble(
   #     chr = c(1),
   #     pos = c(1001,1002,1005,1017),
@@ -38,8 +39,9 @@ tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
   #   )
   #
   # x <- test_data
-  # output <- "genotypes.raw"
   # progress <- 1
+  # sex <- c(0,1,1,0,1)
+  # trait <- c(1.3,3.4,4.4,2.2,1.7)
 
   ids <- colnames(x)[-c(1:4)]
   n_ids <- length(ids)
@@ -54,15 +56,10 @@ tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
   nbytes <- ceiling(n_ids/4)
   coding <- as.raw(rep(1, length(pos)))
   strand <- as.raw(rep(0, length(pos)))
+  class(coding) <- 'snp.coding'
+  class(strand) <- 'snp.strand'
 
-  ofile <- file(output, 'w')
-  cat(file = ofile, "#GenABEL raw data version 0.1\n")
-  cat(file = ofile, ids, "\n")
-  cat(file = ofile, marker_names, "\n")
-  cat(file = ofile, chrom, "\n")
-  cat(file = ofile, pos, "\n")
-  cat(file = ofile, coding, "\n")
-  cat(file = ofile, strand, "\n")
+  rdlst <- vector(mode = "list", length = n_markers)
   rdta <- raw(nbytes)
   i <- 1
   for (marker in marker_names) {
@@ -75,11 +72,21 @@ tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
                                     ids[wlst[j]], "\t", marker_names[i], "\n")
       stop("execution terminated")
     }
+    #start <- (nbytes * (i - 1)) + 1
+    #stop <- start + nbytes - 1
     rdta <- GenABEL:::put.snps(gtin)
-    cat(file = ofile, rdta, "\n")
+    rdlst[[i]] <- rdta
     if (progress && round(i/progress) == i/progress)
       cat("Converted", i, "markers...\n")
-  i <- i + 1
+    i <- i + 1
   }
-  close(ofile)
-}
+  pheno_dta = data.frame(id = ids, sex = sex, y = trait)
+  g <- snp.data(nids = n_ids, rawdata = unlist(rdlst), idnames = ids,
+           snpnames = marker_names,
+           chromosome = as.factor(chrom),
+           map = pos, coding = coding, strand = strand, male = sex)
+  output <- new("gwaa.data", phdata = pheno_dta, gtdata = g)
+  rm(g, pheno_dta)
+  gc(verbose = FALSE)
+  return(output)
+  }

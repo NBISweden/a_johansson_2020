@@ -9,6 +9,7 @@ source('R/impute_G.R')
 source('R/get_genotypes.R')
 source('R/fix_allele_encoding.R')
 source('R/tibble_to_raw_genotypes.R')
+source('R/tibble_to_gwaa.R')
 
 perc_negative_common <- 0
 perc_negative_rare <- 0.2
@@ -42,7 +43,8 @@ plot(y, 1:dim(G)[1], las = 1, cex.axis = .7, ylab="Individual", xlab="Phenotype"
 abline(v=0, col="grey")
 grid()
 
-as_tibble(t(G)) %>% add_column(snp=colnames(G), .before = 1) %>%
+geno <- as_tibble(t(G)) %>% add_column(snp=colnames(G), .before = 1) %>%
     add_column(chr = c(1), .after = 1) %>%
     add_column(pos = c(1:dim(G)[2]), .after = 2) %>%
-    add_column(strand = c(0), .after = 3) %>% tibble_to_raw_genotypes()
+    add_column(strand = c(0), .after = 3)
+data <- tibble_to_gwaa(x = geno, sex = rep(0, times=18), trait = y)
