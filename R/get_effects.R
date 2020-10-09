@@ -17,7 +17,7 @@ get_effects <- function(maf, N, shape12, thr=0.01, below=T, perc_negative=.2) {
   } else {
     idx <- sample(which(maf <= thr & maf > 0), N, replace = F)
   }
-  signs <- sample(c(-1,1), N, replace = T, prob = c(perc_negative, 1 - perc_negative_common))
+  signs <- sample(c(-1,1), N, replace = T, prob = c(perc_negative, 1 - perc_negative))
   betas <- dbeta(x = maf[idx], shape1 = shape12[1], shape2 = shape12[2]) * signs
   output <- list(marker_idx = idx, effects = betas)
   return(output)
