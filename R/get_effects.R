@@ -7,17 +7,21 @@
 #' @param maf - vector of minor-allele frequencies
 #' @param N - number of markers to be assigned an effect
 #' @param shape12 - a two element vector of Beta distribution shapes.
-#' @param below - a boolean, if F markers below and equal to the `thr` will be sampled
-#' @param perc_negative - percentage of effects to be set to negative
+#' @param rare - a boolean, if TRUE, markers below and equal to the `thr` will be sampled, i.e. the rare variants
+#' @param frac_negative - fraction of effects to be set to negative
+#' @param seed - set seed for sampling, if FALSE, default `sample` seed will be used
 #' @return a list with two elements: `marker_idx` is a vector of indices of the markers assigned an effect and `effects` is a vector of
 #' effects, one for each marker
-get_effects <- function(maf, N, shape12, thr=0.01, below=T, perc_negative=.2) {
-  if (!below) {
-    idx <- sample(which(maf > thr), N, replace = F)
-  } else {
-    idx <- sample(which(maf <= thr & maf > 0), N, replace = F)
+get_effects <- function(maf, N, shape12, thr=0.01, rare=T, frac_negative=0, seed = F) {
+  if (seed) {
+    set.seed(seed)
   }
-  signs <- sample(c(-1,1), N, replace = T, prob = c(perc_negative, 1 - perc_negative))
+  if (rare) {
+    idx <- sample(which(maf <= thr & maf > 0), N, replace = F)
+  } else {
+    idx <- sample(which(maf > thr & maf < 1), N, replace = F)
+  }
+  signs <- sample(c(-1,1), N, replace = T, prob = c(frac_negative, 1 - frac_negative))
   betas <- dbeta(x = maf[idx], shape1 = shape12[1], shape2 = shape12[2]) * signs
   output <- list(marker_idx = idx, effects = betas)
   return(output)
