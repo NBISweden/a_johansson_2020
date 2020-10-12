@@ -24,7 +24,7 @@ names(maf) <- colnames(srdta@gtdata)
 
 # Get effects for common alleles
 common <- get_effects(maf = maf, thr = 0.05,
-                              N = 5,
+                              N = 1,
                               shape12 = c(.1,.1),
                               rare = F,
                               frac_negative = 0)
@@ -48,14 +48,28 @@ y_rare <- G_rare %*% rare$effects + rnorm(n = dim(G_rare)[1], mean = 0, sd = 1)
 plot_pheno(y_comm, G_comm)
 plot_pheno(y_rare, G_rare)
 
+#### Run common
+srdta@phdata[,'qt1'] <- y_comm
+(simulated <- names(common$effects))
+qt <- qtscore(qt1 ~ sex, data = srdta)
+plot(qt, las=1, cex.axis = .7, col = 'darkgreen', cex=.5)
+grid()
+col <- as.numeric(common$effects > 0)
+col[col == 1] <- 'red'
+col[col == 0] <- 'blue'
+#abline(v=qt[simulated,]$Position, col=col)
+points(qt[simulated,]$Position, -log10(qt[simulated,]$P1df), col=col, pch=19)
+
+# Predicted effect vs. simulated effect
+# plot(common$effects, qt[simulated, ]$effB, cex = .5, pch = 19, las=1, cex.axis=.7, xlab='simulated effect', ylab='predicted effect')
+# grid(col='grey')
+# abline(a = 0, b=1, col='lightgrey')
+
+### Run rare
 # Inject the simulated phenotype to the gwaa.data object
 colnames(srdta@gtdata)[rare$marker_idx]
 srdta@phdata[,'qt1'] <- y_rare
 (simulated <- names(rare$effects))
-#snpsubset = !(snpnames(srdta) %in% c('rs2935'))
-
-# Do GWAS
-top <- G[,2]
 qt <- qtscore(qt1~sex, data = srdta)
 plot(qt, las=1, cex.axis = .7, col = 'darkgreen', cex=.5)
 grid()
