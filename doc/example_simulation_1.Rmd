@@ -1,0 +1,94 @@
+---
+title: "Example simulation"
+author: "Marcin Kierczak"
+date: "10/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Introduction
+
+In this document, I show example simulation workflow using implemented functions.
+The main idea is to take a real dataset and, based on the actual genotypes at a locus (or more loci), simulate phenotype. Loci are selected in random fashion, but they have certain desired characteristics, namely they fall into a certain minor-allele frequency (maf) bin and they have given effect sizes (also related to the maf).
+
+In this document, we will use datasets supplied by the `GenABEL` package.
+
+```{r setup_pkg}
+library('GenABEL')
+library('here')
+library('tidyverse')
+source(here('/R/get_effects.R'))
+source(here('/R/plot_effects.R'))
+source(here('/R/impute_G.R'))
+source(here('/R/get_genotypes.R'))
+source(here('/R/fix_allele_encoding.R'))
+source(here('/R/tibble_to_raw_genotypes.R'))
+source(here('/R/tibble_to_gwaa.R'))
+
+plot_pheno <- function(y, G) {
+  data <- tibble(id = rownames(G), y = y)
+  ggplot(data, mapping = aes(x=y)) + geom_histogram() + theme_bw()
+}
+```
+After this initial setup, we can load the actual data and look at its dimensions:
+```{r load_data}
+data(srdta)
+nids(srdta) 
+nsnps(srdta) 
+```
+
+
+### Extracting and preparing data
+
+In this step, we will extract marker summary data, compute reference allele frequency from allele counts and compute minor allele frequency.
+
+```{r prepare_G}
+tmp <- summary(srdta@gtdata)
+raf <- ((2 * tmp$P.22) + tmp$P.12) / (2 * tmp$NoMeasured) # reference allele frequency
+maf <- pmin(raf, 1 - raf)
+names(maf) <- colnames(srdta@gtdata)
+```
+Above, we made sure we are getting the actual minor allele frequency, not the arbitrary reference 
+allele frequency as done in GenABEL.
+
+### Modelling effects for common markers
+Now, we are ready to simulate some effects based on, in this case, $N = 2$ randomly selected loci with $maf > 0.05$ (common variants). We say, the effect of each allele should be proportional to its maf and this relationship is given by the ${\beta}$ distribution with shape parameters set to `c(0.1, 0.1)`. We will not model any markers with negative effect here. 
+
+```{r get_effect_common}
+# Get effects for common alleles
+common <- get_effects(maf = maf, thr = 0.05,
+                              N = 2,
+                              shape12 = c(.1,.1),
+                              rare = F,
+                              frac_negative = 0)
+```
+We can have a quick look at wgat the `get_effects` function has returned. 
+```{r get_effects_return}
+str(common)
+common
+```
+We can see it is a list with two elements: marker indices (and names) and their effects.
+
+### Extracting genotypes matrix
+Now, we will get the actual genotypes at the loci used for simulation. We than convert them to *double* so that the genotypes matrix $G$ contains allele counts. We need to make sure that the genotypes matrix contains the minor allele count and not some other reference allele count which we do by calling the `fix_allele_encoding` function. Finally, we impute missing genotypes based on maf value and following the Hardy-Weinberg principle using the `impute_G` function.
+
+```{r extracting_G}
+genos_common <- srdta@gtdata[,common$marker_idx]
+      G_comm <- as.double(genos_common) %>%
+      fix_allele_encoding() %>%
+      impute_G(maf = maf[common$marker_idx])
+```
+Let's gave a look at the genotypes matrix (here, for the 5 first individuals):
+```{r look_at_G}
+G_comm[1:5, ]
+```
+Indeed, we see that the matrix contains minor allele counts at each locus and for every individual. This is exactly what we do need to simulate our phenotypes.
+
+### Simulating phenotypes
+```{r sim_phenos, warning=FALSE}
+y_comm <- G_comm %*% common$effects + rnorm(n = dim(G_comm)[1], mean = 0, sd = 1)
+plot_pheno(y_comm, G_comm)
+```
