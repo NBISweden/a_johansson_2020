@@ -88,7 +88,40 @@ G_comm[1:5, ]
 Indeed, we see that the matrix contains minor allele counts at each locus and for every individual. This is exactly what we do need to simulate our phenotypes.
 
 ### Simulating phenotypes
+
+In order to simulate phenotypes, one can use standard linear model $y = X\beta + \epsilon$ equation with $X = G$. We have everything we need:
+
+* the genotypes matrix $G$,
+* the effects vector $\beta$ and
+* the Gaussian error term $\epsilon \sim \mathcal{N}(0, 1)$
+
 ```{r sim_phenos, warning=FALSE}
 y_comm <- G_comm %*% common$effects + rnorm(n = dim(G_comm)[1], mean = 0, sd = 1)
 plot_pheno(y_comm, G_comm)
+```
+
+### GWAS on the simulated phenotype
+
+Now, in order to test whether it works, we need to inject the simulated phenotype to the GenABEL *gwaa.data* object:
+
+```{r qt_common_inject}
+srdta@phdata[,'qt1'] <- y_comm
+```
+
+After having done this, we can perform a regular GWAS:
+
+```{r GWAS_common}
+qt <- qtscore(qt1 ~ sex, data = srdta)
+```
+
+And, finally, plot the results making markers used for simulation easily distinguishable by coloring them red.
+
+```{r plot_GWAS_common}
+plot(qt, las=1, cex.axis = .7, col = 'darkgreen', cex=.5)
+grid()
+col <- as.numeric(common$effects > 0)
+col[col == 1] <- 'red'
+col[col == 0] <- 'blue'
+(simulated <- names(common$effects))
+points(qt[simulated,]$Position, -log10(qt[simulated,]$P1df), col=col, pch=19)
 ```
