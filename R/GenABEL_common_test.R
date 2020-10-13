@@ -24,7 +24,7 @@ names(maf) <- colnames(srdta@gtdata)
 
 # Get effects for common alleles
 common <- get_effects(maf = maf, thr = 0.05,
-                              N = 1,
+                              N = 2,
                               shape12 = c(.1,.1),
                               rare = F,
                               frac_negative = 0)
@@ -37,7 +37,10 @@ rare <- get_effects(maf = maf, thr = 0.01,
 
 # Get genotypes, convert them to double, make sure the genotypes matrix contains the minor allele count, impute missing
 genos_common <- srdta@gtdata[,common$marker_idx]
-G_comm <- as.double(genos_common) %>% fix_allele_encoding() %>% impute_G(maf = maf[common$marker_idx])
+G_comm <- as.double(genos_common) %>%
+  fix_allele_encoding() %>%
+  impute_G(maf = maf[common$marker_idx])
+
 genos_rare <- srdta@gtdata[,rare$marker_idx]
 G_rare <- as.double(genos_rare) %>% fix_allele_encoding() %>% impute_G(maf = maf[rare$marker_idx])
 
@@ -67,7 +70,6 @@ points(qt[simulated,]$Position, -log10(qt[simulated,]$P1df), col=col, pch=19)
 
 ### Run rare
 # Inject the simulated phenotype to the gwaa.data object
-colnames(srdta@gtdata)[rare$marker_idx]
 srdta@phdata[,'qt1'] <- y_rare
 (simulated <- names(rare$effects))
 qt <- qtscore(qt1~sex, data = srdta)
