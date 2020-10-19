@@ -31,11 +31,11 @@ G <- get_genotypes(x = vcf, marker_names = names(rare$marker_idx)) %>%
   impute_G(maf = maf)
 
 # Create a test
-tmp <- G[,1]
-tmp[tmp == 0] <- 3
-tmp[tmp == 2] <- 0
-tmp[tmp == 3] <- 2
-G[,1] <- tmp
+#tmp <- G[,1]
+#tmp[tmp == 0] <- 3
+#tmp[tmp == 2] <- 0
+#tmp[tmp == 3] <- 2
+#G[,1] <- tmp
 
 
 y <- G %*% rare$effects + rnorm(n = dim(G)[1], mean = 0, sd = 1)
@@ -48,3 +48,5 @@ geno <- as_tibble(t(G)) %>% add_column(snp=colnames(G), .before = 1) %>%
     add_column(pos = c(1:dim(G)[2]), .after = 2) %>%
     add_column(strand = c(0), .after = 3)
 data <- tibble_to_gwaa(x = geno, sex = rep(0, times=18), trait = y)
+qt <- qtscore(y~1, data = data)
+plot(qt)

@@ -85,3 +85,45 @@ points(qt[simulated,]$Position, -log10(qt[simulated,]$P1df), col=col, pch=19)
 plot(rare$effects, qt[simulated, ]$effB, cex = .5, pch = 19, las=1, cex.axis=.7, xlab='simulated effect', ylab='predicted effect')
 grid(col='grey')
 abline(a = 0, b=1, col='lightgrey')
+
+# Now, let's look at the SKAT model
+library(SKAT)
+
+run_SKAT_test <- function(N = 10, maf, data, shape12 = c(1,25), frac_negative = .2) {
+  result <- rep(NA, times = N)
+    i <- 1
+    for (i in 1:N) {
+    rare <- get_effects(maf = maf, thr = 0.01,
+                      N = 20,
+                      shape12 = c(1,25),
+                      rare = T,
+                      frac_negative = frac_negative)
+    genos_rare <- data@gtdata[,rare$marker_idx]
+    G_rare <- as.double(genos_rare) %>% fix_allele_encoding() %>% impute_G(maf = maf[rare$marker_idx])
+    y_rare <- G_rare %*% rare$effects + rnorm(n = dim(G_rare)[1], mean = 0, sd = 1)
+    srdta@phdata[,'qt1'] <- y_rare
+    skat_null_model <- SKAT_Null_Model(qt1~sex, data = srdta@phdata)
+    skat_model <- SKAT(G_rare, skat_null_model, method = 'SKATO')
+    result[i] <- skat_model$p.value
+    i <- i + 1
+  }
+  return(result)
+}
+
+N_trials <- 100
+experiment <- expand.grid(beta1 = c(1), beta2 = c(1, 10, 20, 25), frac_neg = c(.2))
+result <- matrix(NA, nrow = dim(experiment)[1], ncol = N_trials)
+for (i in 1:dim(experiment)[1]) {
+  pvals <- run_SKAT_test(N = N_trials,
+                         maf = maf,
+                         data = srdta,
+                         shape12 = c(experiment$beta1[i], experiment$beta2[i]),
+                         frac_negative = experiment$frac_neg[i])
+  result[i, ] <- pvals
+}
+#rownames(result) <- paste0("Beta(",experiment$beta1,", ",experiment$beta2,") FracNeg = ", experiment$frac_neg)
+label <- paste0("experiment_B(",experiment$beta1,"_",experiment$beta2,")_neg=",experiment$frac_neg)
+experiment_data <- data.frame(experiment=label, result)
+experiment_data %>% as_tibble() %>% replace(. == 0, 1e-320) %>%
+  pivot_longer(cols = -1, names_to = 'trial') %>%
+  ggplot(mapping = aes(x = experiment, y = -log10(value), group=experiment)) + geom_boxplot()
