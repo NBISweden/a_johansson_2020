@@ -110,6 +110,7 @@ run_SKAT_test <- function(N = 10, maf, data, shape12 = c(1,25), frac_negative = 
   return(result)
 }
 
+<<<<<<< HEAD
 N_trials <- 100
 experiment <- expand.grid(beta1 = c(1), beta2 = c(1, 10, 20, 25), frac_neg = c(.2))
 result <- matrix(NA, nrow = dim(experiment)[1], ncol = N_trials)
@@ -127,3 +128,6 @@ experiment_data <- data.frame(experiment=label, result)
 experiment_data %>% as_tibble() %>% replace(. == 0, 1e-320) %>%
   pivot_longer(cols = -1, names_to = 'trial') %>%
   ggplot(mapping = aes(x = experiment, y = -log10(value), group=experiment)) + geom_boxplot()
+=======
+run_SKAT_test(N = 100, maf = maf, data = srdta)
+>>>>>>> 5b3a6a2ed1932906eefd7623c93b2ae4f72ab6c7

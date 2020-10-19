@@ -23,8 +23,8 @@ maf <- vcfR::maf(vcf)[,'Frequency']
 rare <- get_effects(maf = maf, thr = thr_common_rare,
                       N = n_rare,
                       shape12 = beta_params_rare,
-                      below = T,
-                      perc_negative = perc_negative_rare)
+                      rare = T,
+                      frac_negative = perc_negative_rare)
 
 G <- get_genotypes(x = vcf, marker_names = names(rare$marker_idx)) %>%
   fix_allele_encoding() %>%
