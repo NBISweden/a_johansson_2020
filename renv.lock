@@ -23,6 +23,20 @@
       "Repository": "CRAN",
       "Hash": "4744be45519d675af66c28478720fce5"
     },
+    "GenABEL": {
+      "Package": "GenABEL",
+      "Version": "1.8-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "293b627e40a283f23a7d29c4d89b7c80"
+    },
+    "GenABEL.data": {
+      "Package": "GenABEL.data",
+      "Version": "1.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "569d3e3b56a08378e057cb8bf8a36be2"
+    },
     "MASS": {
       "Package": "MASS",
       "Version": "7.3-51.6",
@@ -57,6 +71,20 @@
       "Source": "Repository",
       "Repository": null,
       "Hash": "e4ae0289d6f221606bf893685d9fce15"
+    },
+    "SKAT": {
+      "Package": "SKAT",
+      "Version": "2.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "891813cefbac1da01db072b13b306604"
+    },
+    "SPAtest": {
+      "Package": "SPAtest",
+      "Version": "3.1.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b34bf1e3aee9f3a4cbc68859b48fa6ad"
     },
     "ape": {
       "Package": "ape",
@@ -274,6 +302,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "221d0ad75dfa03ebf17b1a4cc5c31dfc"
+    },
+    "here": {
+      "Package": "here",
+      "Version": "0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2c0406b8e0a4c3516ab37be62da74e3c"
     },
     "highr": {
       "Package": "highr",
