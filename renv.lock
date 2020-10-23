@@ -67,10 +67,10 @@
     },
     "Rcpp": {
       "Package": "Rcpp",
-      "Version": "1.0.4.6",
+      "Version": "1.0.5",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e4ae0289d6f221606bf893685d9fce15"
+      "Hash": "125dc7a0ed375eb68c0ce533b48d291f"
     },
     "SKAT": {
       "Package": "SKAT",

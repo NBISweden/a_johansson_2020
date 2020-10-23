@@ -9,6 +9,9 @@ libxml2-dev
 
 RUN mkdir project
 RUN mkdir project/scripts
+RUN mkdir project/scripts/src
+RUN mkdir project/scripts/doc
+RUN mkdir project/scripts/R
 
 WORKDIR project/
   COPY renv.lock renv.lock
@@ -18,6 +21,6 @@ RUN R -e "remotes::install_github('rstudio/renv@${RENV_VERSION}')"
 RUN R -e 'renv::restore()'
 
 WORKDIR project/scripts/
-COPY src/* .
-COPY doc/* .
-COPY R/* .
+COPY src/* src/
+COPY doc/* doc/
+COPY R/* R/
