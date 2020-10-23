@@ -67,9 +67,9 @@
     },
     "Rcpp": {
       "Package": "Rcpp",
-      "Version": "1.0.5.2",
+      "Version": "1.0.4.6",
       "Source": "Repository",
-      "Repository": null,
+      "Repository": "CRAN",
       "Hash": "e4ae0289d6f221606bf893685d9fce15"
     },
     "SKAT": {
