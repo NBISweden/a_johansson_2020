@@ -1,6 +1,12 @@
 # a_johansson_2020
 Åsa Johansson partner project 2020
 
+<!-- badges: start -->
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
+[![Codecov test coverage](https://codecov.io/gh/NBISweden/a_johansson_2020/branch/master/graph/badge.svg)](https://codecov.io/gh/NBISweden/a_johansson_2020?branch=master)
+[![R build status](https://github.com/NBISweden/a_johansson_2020/workflows/R-CMD-check/badge.svg)](https://github.com/NBISweden/a_johansson_2020/actions)
+<!-- badges: end -->
+
 ## Objectives
 To develop an R package for testing the scope of applicability of different GWA methodologies, esp. with respect ot varying:
 * threshold between rare and common variants,
