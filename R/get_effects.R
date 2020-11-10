@@ -16,11 +16,24 @@ get_effects <- function(maf, N, shape12, thr=0.01, rare=T, frac_negative=0, seed
   if (seed) {
     set.seed(seed)
   }
-  if (rare) {
-    idx <- sample(which(maf <= thr & maf > 0), N, replace = F)
-  } else {
-    idx <- sample(which(maf > thr & maf < 1), N, replace = F)
+  if (max(maf) > 1 | min(maf) < 0) {
+    warning(paste0("Weird values of maf detected. min: ", min(maf), " max: ", max(maf), "!"))
   }
+  if (rare) {
+    valid_markers <- which(maf <= thr & maf > 0)
+  } else {
+    valid_markers <- which(maf > thr & maf < 1)
+  }
+
+  l <- length(valid_markers)
+  if (l == 0) {
+    warning("No markers matching criteria in the region! Returning NULL!")
+    return(NULL)
+  } else if ( l < N) {
+    warning(paste0('Expected ', N, ' markers while only ', l, 'match maf criteria!'))
+  }
+
+  idx <- sample(valid_markers, pmax(l, N), replace = F)
   signs <- sample(c(-1,1), N, replace = T, prob = c(frac_negative, 1 - frac_negative))
   betas <- dbeta(x = maf[idx], shape1 = shape12[1], shape2 = shape12[2]) * signs
   output <- list(marker_idx = idx, effects = betas)
