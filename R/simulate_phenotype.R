@@ -8,6 +8,7 @@
 #' @param N_common number of common alleles to affect the trait
 #' @param beta_params_rare parameters of the Beta distribution to simulate effect of common alleles
 #' @param perc_negative_common how many (per cent) common alleles have negative effect
+#' @param e a vector of mean and sd for the error term. Default (0, 1).
 #' @value vector of simulated phenotypes
 
 simulate_phenotype <- function(x,
@@ -17,7 +18,8 @@ simulate_phenotype <- function(x,
                                perc_negative_rare,
                                N_common,
                                beta_params_common,
-                               perc_negative_common) {
+                               perc_negative_common
+                               e = c(0, 1)) {
 
   maf <- vcfR::maf(x)[,'Frequency']
   if (n_rare > 0) {
@@ -48,7 +50,7 @@ simulate_phenotype <- function(x,
 
   y_rare <- G_rare %*% rare$effects
   y_common <- G_common %*% common$effects
-  e <- rnorm(n = dim(G_rare)[1], mean = 0, sd = 1)
+  e <- rnorm(n = dim(G_rare)[1], mean = e[1], sd = e[2])
   y <- y_common + y_rare + e
   return(y)
 }
