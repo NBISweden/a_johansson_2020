@@ -18,7 +18,7 @@ simulate_phenotype <- function(x,
                                perc_negative_rare,
                                N_common,
                                beta_params_common,
-                               perc_negative_common
+                               perc_negative_common,
                                e = c(0, 1)) {
 
   maf <- vcfR::maf(x)[,'Frequency']
