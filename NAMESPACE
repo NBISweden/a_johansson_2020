@@ -1,1 +1,5 @@
 exportPattern("^[[:alpha:]]+")
+import("GenABEL")
+import("SKAT")
+import("magrittr")
+import("tidyverse")
