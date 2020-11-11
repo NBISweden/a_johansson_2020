@@ -22,6 +22,7 @@ The following input parameters are expected from the user:
 * the number of rare and common variants that contribute,
 * distribution of effect sizes as a function of allele frequency (separately for the rare and the common alleles),
 * percentage of alleles with negative effect (for both the common and the rare variants),
+* parameters (mean, standard deviation) of the error term,
 * type of the trait (continuous or binary, a cut-off value for the binary trait),
 
 ## To add in future:
