@@ -1,7 +1,10 @@
 FROM rstudio/r-base:4.0.2-xenial AS builder
 MAINTAINER Marcin Kierczak <marcin.kierczak_ANTISPAM_scilifelab.se>
 
+ARG GITHUB_PAT
+
 ENV RENV_VERSION 0.12.0
+ENV GITHUB_PAT=$GITHUB_PAT
 
 RUN apt update -y && apt install -y \
 libssl-dev \
