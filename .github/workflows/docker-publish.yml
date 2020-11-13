@@ -27,6 +27,8 @@ jobs:
         with:
           push: true
           tags: quiestrho/gwasim:latest
+          build-args: |
+          	PAT=${{ secrets.GITHUB_PAT }}
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
