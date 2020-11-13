@@ -15,10 +15,10 @@ WORKDIR project/
   COPY renv.lock renv.lock
 
 RUN R -e "install.packages('remotes', repos = c(CRAN = 'https://cloud.r-project.org'))"
-RUN R -e "remotes::install_github('NBISweden/a_johansson_2020', auth_token='${GITHUB_PAT}')"
 RUN R -e "remotes::install_github('rstudio/renv@${RENV_VERSION}')"
 RUN R -e 'renv::consent(provided = TRUE)'
 RUN R -e 'renv::restore()'
+RUN R -e "remotes::install_github('NBISweden/a_johansson_2020', auth_token='${GITHUB_PAT}')"
 
 #WORKDIR project/scripts/
 #COPY src/* src/
