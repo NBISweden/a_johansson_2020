@@ -10,7 +10,7 @@ RUN apt update -y && apt install -y \
 libssl-dev \
 libxml2-dev
 
-RUN echo $GITHUB_PAT > ~/.Renviron
+RUN echo GITHUB_PAT=$GITHUB_PAT > ~/.Renviron
 RUN mkdir project
 #RUN mkdir project/scripts
 #RUN mkdir project/scripts/src
