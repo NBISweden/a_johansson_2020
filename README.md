@@ -21,7 +21,7 @@ To use the package on Bianca:
 * ssh to Rackham, do `singularity pull --docker-login docker://quiestrho/gwasim-latest`
 * transfer the `gwasim_latest.sif` file into Bianca's wharf via sftp,
 * move the file from wharf to your project library,
-* `docker run gwasim-latest.sif < script.r` to run an R script within the container 
+* `docker exec gwasim-latest.sif R --vanilla < script.r` to run an R script within the container 
 
 ## Input
 The following input parameters are expected from the user:
