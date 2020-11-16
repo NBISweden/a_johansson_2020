@@ -14,7 +14,7 @@ To develop an R package for testing the scope of applicability of different GWA 
 * degree of population structure,
 * varying amount of contributing loci.
 
-## Using
+## Using on Bianca
 To use the package on Bianca:
 * the `gwasim` package is automatically built into a docker container upon every push,
 * container is called gwasim-latest and is stored in `quiestrho` account on DockerHub,
