@@ -20,7 +20,4 @@ RUN R -e 'renv::consent(provided = TRUE)'
 RUN R -e 'renv::restore()'
 RUN R -e "remotes::install_github('NBISweden/a_johansson_2020', auth_token='${GITHUB_PAT}')"
 
-#WORKDIR project/scripts/
-#COPY src/* src/
-#COPY doc/* doc/
-#COPY R/* R/
+CMD ["R", "--vanilla"]
