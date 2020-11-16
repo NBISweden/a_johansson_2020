@@ -14,6 +14,15 @@ To develop an R package for testing the scope of applicability of different GWA 
 * degree of population structure,
 * varying amount of contributing loci.
 
+## Using
+To use the package on Bianca:
+* the `gwasim` package is automatically built into a docker container upon every push,
+* container is called gwasim-latest and is stored in `quiestrho` account on DockerHub,
+* ssh to Rackham, do `singularity pull --docker-login docker://quiestrho/gwasim-latest`
+* transfer the `gwasim_latest.sif` file into Bianca's wharf via sftp,
+* move the file from wharf to your project library,
+* `docker run gwasim-latest.sif < script.r` to run an R script within the container 
+
 ## Input
 The following input parameters are expected from the user:
 * a VCF file with variants coming from a population under studies,
