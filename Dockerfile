@@ -7,7 +7,8 @@ ENV GITHUB_PAT=$PAT
 
 RUN apt update -y && apt install -y \
 libssl-dev \
-libxml2-dev
+libxml2-dev \
+nano
 
 RUN mkdir project
 
