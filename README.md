@@ -43,5 +43,5 @@ The following input parameters are expected from the user:
 
 ## Possible applications:
 1. To validate sensitivity and specificity of various GWA algorithms in the landscape of varying effect sizes, directionalities and mafs. 
-
+  
 ![](assets/Simulations_diagram.png?raw=true)
