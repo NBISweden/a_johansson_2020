@@ -36,7 +36,7 @@ The following input parameters are expected from the user:
 
 ## To add in future:
 * kinship matrix for the studied population,
-* fixed effects,
+* fixed effects
 
 ## Output
 * A text file or a tibble with simulated phenotypes along with the effect of the loci used for simulation.
