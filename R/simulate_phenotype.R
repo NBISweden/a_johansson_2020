@@ -20,8 +20,7 @@ simulate_phenotype <- function(x,
                                beta_params_common,
                                perc_negative_common,
                                e = c(0, 1)) {
-
-  maf <- vcfR::maf(x)[,'Frequency']
+  maf <- get_maf(x)
   if (n_rare > 0) {
     rare <- get_effects(maf = maf, thr = thr_common_rare,
                       N = n_rare,

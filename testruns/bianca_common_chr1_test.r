@@ -19,7 +19,7 @@ maf <- pmin(raf, 1 - raf)
 names(maf) <- colnames(srdta@gtdata)
 
 run_tests <- function(data, maf, times=3, N=1, thr=0.01, shape12=c(.1,.1), rare=F, frac_negative=0, e = c(0,1)) {
-	result <- matrix(NA, nrow = times, ncol = N + 1)
+  result <- matrix(NA, nrow = times, ncol = N + 1)
   	i <- 1
     for (i in 1:times) {
     	print(paste0('Iteration ', i, ' in progress...'))
@@ -36,7 +36,7 @@ run_tests <- function(data, maf, times=3, N=1, thr=0.01, shape12=c(.1,.1), rare=
 }
 
 size <- c(nids(srdta), nsnps(srdta))
-result <- run_tests(times = 10 000)
+result <- run_tests(times = 10000)
 save(size, result, file='common_run_results.Rda')
 
 #skat_null_model <- SKAT_Null_Model(y~sex, data = data@phdata, y=y)
