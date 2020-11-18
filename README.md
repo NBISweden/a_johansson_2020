@@ -1,5 +1,5 @@
 # a_johansson_2020
-Åsa Johansson partner project 2020
+AJ partner project 2020
 
 <!-- badges: start -->
 [![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
