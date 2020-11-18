@@ -5,6 +5,7 @@ AJ partner project 2020
 [![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 [![Codecov test coverage](https://codecov.io/gh/NBISweden/a_johansson_2020/branch/master/graph/badge.svg)](https://codecov.io/gh/NBISweden/a_johansson_2020?branch=master)
 [![R build status](https://github.com/NBISweden/a_johansson_2020/workflows/R-CMD-check/badge.svg)](https://github.com/NBISweden/a_johansson_2020/actions)
+![build-and-push-to-DockerHub](https://github.com/NBISweden/a_johansson_2020/workflows/build-and-push-to-DockerHub/badge.svg)
 <!-- badges: end -->
 
 ## Objectives

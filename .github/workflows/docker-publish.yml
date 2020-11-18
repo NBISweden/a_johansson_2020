@@ -2,7 +2,8 @@ name: build-and-push-to-DockerHub
 
 on:
   push:
-    branches: master
+    tags:
+      - '*'
 
 jobs:
   main:
