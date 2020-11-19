@@ -2,20 +2,18 @@
 % Please edit documentation in R/impute_G.R
 \name{impute_G}
 \alias{impute_G}
-\title{Impute missing genotypes using minor allele frequencies}
+\title{Impute missing genotypes using minor allele frequency}
 \usage{
-impute_G(G, maf)
+impute_G(G)
 }
 \arguments{
 \item{G}{- genotype matrix (individuals in columns, markers in rows) to impute}
-
-\item{maf}{- a vector with minor allele frequencies for the population from which G comes}
 }
 \value{
 an imputed matrix
 }
 \description{
-Impute missing genotypes using minor allele frequencies
+Imputes missing genotypes using minor allele frequency and assuming Hardy-Weinberg equilibrium
 }
 \author{
 Marcin Kierczak <marcin.kierczak@scilifelab.se>

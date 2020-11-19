@@ -14,9 +14,9 @@
 fix_allele_encoding <- function(G) {
   for (marker in colnames(G)) {
     #marker <- colnames(G)[1]
-    ref_allele_cnt <- sum(2*(G[,marker] == 0), na.rm = T) + sum(G[,marker] == 1, na.rm = T)
-    alt_allele_cnt <- sum(2*(G[,marker] == 2), na.rm = T) + sum(G[,marker] == 1, na.rm = T)
-    if (ref_allele_cnt < alt_allele_cnt) {
+    major_allele_cnt <- sum(2*(G[,marker] == 0), na.rm = T) + sum(G[,marker] == 1, na.rm = T)
+    minor_allele_cnt <- sum(2*(G[,marker] == 2), na.rm = T) + sum(G[,marker] == 1, na.rm = T)
+    if (major_allele_cnt < minor_allele_cnt) {
       tmp <- G[ , marker]
       ref <- which(tmp == 0)
       alt <- which(tmp == 2)
