@@ -31,7 +31,7 @@ get_effects <- function(maf, N, shape12, thr=0.01, rare=T, frac_negative=0, seed
     warning("No markers matching criteria in the region! Returning NULL!")
     return(NULL)
   } else if ( l < N) {
-    warning(paste0('Expected ', N, ' markers while only ', l, 'match maf criteria!'))
+    warning(paste0('Expected ', N, ' markers while only ', l, ' match maf criteria!'))
   }
 
   idx <- sample(valid_markers, pmin(l, N), replace = F)
