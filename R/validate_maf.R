@@ -6,7 +6,7 @@
 #' reason and problems will be NULL.
 #'
 validate_maf <- function(x) {
-  problems <- list(reason = NULL, problems = NULL, maf = maf)
+  problems <- list(reason = NULL, problems = NULL, maf = x)
   if (sum(x > 0.5) != 0) {
     reason <- 'Some minor allele frequencies are > 0.5! Converting to 1 - maf!'
     warning(reason)
