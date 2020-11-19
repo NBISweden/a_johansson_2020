@@ -11,7 +11,9 @@ validate_maf <- function(x) {
     reason <- 'Some minor allele frequencies are > 0.5! Converting to 1 - maf!'
     warning(reason)
     maf <- pmin(x, (1 - x))
-    problems <- list(reason = reason, problems = x[x > 0.5], maf=maf)
+    problems <- list(reason = reason,
+                     problems = x[x > 0.5],
+                     maf = maf)
   }
   return(problems)
 }

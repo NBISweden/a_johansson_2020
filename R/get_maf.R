@@ -13,7 +13,6 @@ get_maf <- function(x) {
   } else {
     stop('ERROR! Data format not supported. Expecting GenABEL gwaa.data or vcfR.')
   }
-
   validated <- validate_maf(maf)
   return(validated$maf)
 }
