@@ -13,6 +13,8 @@ get_effects(maf, N, shape12, thr = 0.01, rare = T, frac_negative = 0, seed = F)
 
 \item{shape12}{- a two element vector of Beta distribution shapes.}
 
+\item{thr}{- threshold for maf. All markers with maf <= thr will be treated as rare.}
+
 \item{rare}{- a boolean, if TRUE, markers below and equal to the `thr` will be sampled, i.e. the rare variants}
 
 \item{frac_negative}{- fraction of effects to be set to negative}

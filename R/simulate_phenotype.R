@@ -6,7 +6,7 @@
 #' @param beta_params_rare parameters of the Beta distribution to simulate effect of rare alleles
 #' @param perc_negative_rare how many (per cent) rare alleles have negative effect
 #' @param N_common number of common alleles to affect the trait
-#' @param beta_params_rare parameters of the Beta distribution to simulate effect of common alleles
+#' @param beta_params_common parameters of the Beta distribution to simulate effect of common alleles
 #' @param perc_negative_common how many (per cent) common alleles have negative effect
 #' @param e a vector of mean and sd for the error term. Default (0, 1).
 #' @value vector of simulated phenotypes
@@ -25,7 +25,7 @@ simulate_phenotype <- function(x,
     rare <- get_effects(maf = maf, thr = thr_common_rare,
                       N = n_rare,
                       shape12 = beta_params_rare,
-                      below = T,
+                      rare = T,
                       perc_negative = perc_negative_rare)
     G_rare <- get_genotypes(x = vcf, marker_names = names(rare$marker_idx)) %>%
       fix_allele_encoding() %>%
@@ -37,7 +37,7 @@ simulate_phenotype <- function(x,
     common <- get_effects(maf = maf, thr = thr_common_rare,
                           N = N_common,
                           shape12 = beta_params_common,
-                          below = F,
+                          rare = F,
                           perc_negative = perc_negative_common)
     G_common <- get_genotypes(x = vcf, marker_names = names(common$marker_idx)) %>%
       fix_allele_encoding() %>%

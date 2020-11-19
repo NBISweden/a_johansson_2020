@@ -2,12 +2,12 @@
 % Please edit documentation in R/get_genotypes.R
 \name{get_genotypes}
 \alias{get_genotypes}
-\title{Get genotypes matrix as counts of reference allele}
+\title{Get genotypes matrix (counts of reference allele) from a GenABEL gwaa-data or vcfR object}
 \usage{
 get_genotypes(x, marker_names)
 }
 \arguments{
-\item{x}{a vcfR object}
+\item{x}{a gwaa-data or a vcfR object}
 
 \item{marker_names}{names of markers to extract}
 }
@@ -15,7 +15,7 @@ get_genotypes(x, marker_names)
 genotype matrix ind x marker with counts of the reference allele
 }
 \description{
-Get genotypes matrix as counts of reference allele
+Get genotypes matrix (counts of reference allele) from a GenABEL gwaa-data or vcfR object
 }
 \author{
 Marcin Kierczak <marcin.kierczak@scilifelab.se>

@@ -8,21 +8,21 @@
 #' @return genotype matrix G (row - ind, col - marker) with fixed encoding:
 #' 0 - major allele homozygote,
 #' 1 - heterozygote,
-#' 2 - minor alllele homozygote
+#' 2 - minor allele homozygote
 #' being simply the count of the minor allele
 #'
 fix_allele_encoding <- function(G) {
   for (marker in colnames(G)) {
     #marker <- colnames(G)[1]
-    ref_cnt <- sum(2*G[,marker] == 0, na.rm = T) + sum(G[,marker] == 1, na.rm = T)
-    alt_cnt <- sum(2*G[,marker] == 2, na.rm = T) + sum(G[,marker] == 1, na.rm = T)
-    if (ref_cnt < alt_cnt) {
-      tmp <- G[, marker]
+    ref_allele_cnt <- sum(2*(G[,marker] == 0), na.rm = T) + sum(G[,marker] == 1, na.rm = T)
+    alt_allele_cnt <- sum(2*(G[,marker] == 2), na.rm = T) + sum(G[,marker] == 1, na.rm = T)
+    if (ref_allele_cnt < alt_allele_cnt) {
+      tmp <- G[ , marker]
       ref <- which(tmp == 0)
       alt <- which(tmp == 2)
       tmp[ref] <- 2
       tmp[alt] <- 0
-      G[,marker] <- tmp
+      G[ ,marker] <- tmp
     }
   }
   return(G)

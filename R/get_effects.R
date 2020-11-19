@@ -6,6 +6,7 @@
 #' @author Marcin Kierczak <marcin.kierczak_NO_SPAM_scilifelab.se>
 #' @param maf - vector of minor-allele frequencies
 #' @param N - number of markers to be assigned an effect
+#' @param thr - threshold for maf. All markers with maf <= thr will be treated as rare.
 #' @param shape12 - a two element vector of Beta distribution shapes.
 #' @param rare - a boolean, if TRUE, markers below and equal to the `thr` will be sampled, i.e. the rare variants
 #' @param frac_negative - fraction of effects to be set to negative

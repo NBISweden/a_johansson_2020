@@ -12,7 +12,8 @@ simulate_phenotype(
   perc_negative_rare,
   N_common,
   beta_params_common,
-  perc_negative_common
+  perc_negative_common,
+  e = c(0, 1)
 )
 }
 \arguments{
@@ -22,13 +23,17 @@ simulate_phenotype(
 
 \item{N_rare}{number of rare alleles to affect the trait}
 
-\item{beta_params_rare}{parameters of the Beta distribution to simulate effect of common alleles}
+\item{beta_params_rare}{parameters of the Beta distribution to simulate effect of rare alleles}
 
 \item{perc_negative_rare}{how many (per cent) rare alleles have negative effect}
 
 \item{N_common}{number of common alleles to affect the trait}
 
+\item{beta_params_common}{parameters of the Beta distribution to simulate effect of common alleles}
+
 \item{perc_negative_common}{how many (per cent) common alleles have negative effect}
+
+\item{e}{a vector of mean and sd for the error term. Default (0, 1).}
 }
 \description{
 Simulate phenotype given a set of common and rare variants.

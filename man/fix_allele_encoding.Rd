@@ -13,7 +13,7 @@ fix_allele_encoding(G)
 genotype matrix G (row - ind, col - marker) with fixed encoding:
 0 - major allele homozygote,
 1 - heterozygote,
-2 - minor alllele homozygote
+2 - minor allele homozygote
 being simply the count of the minor allele
 }
 \description{
