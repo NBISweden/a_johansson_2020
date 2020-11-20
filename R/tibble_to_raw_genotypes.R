@@ -24,6 +24,7 @@
 #' @param output name of the file to write output to
 #' @param progress report progress every N individuals
 #' @export
+#'
 tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
   #   test_data <- tibble(
   #     chr = c(1),

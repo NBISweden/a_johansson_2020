@@ -3,6 +3,8 @@
 #' @param x a gwaa-data or a vcfR object
 #' @param marker_names names of markers to extract
 #' @return genotype matrix ind x marker with counts of the reference allele
+#' @export
+#'
 get_genotypes <- function(x, marker_names) {
   obj_type <- class(x)
   if (obj_type == "gwaa.data") {

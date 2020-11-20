@@ -13,6 +13,8 @@
 #' @param seed - set seed for sampling, if FALSE, default `sample` seed will be used
 #' @return a list with two elements: `marker_idx` is a vector of indices of the markers assigned an effect and `effects` is a vector of
 #' effects, one for each marker
+#' @export
+#'
 get_effects <- function(maf, N, shape12, thr=0.01, rare=T, frac_negative=0, seed = F) {
   if (seed) {
     set.seed(seed)

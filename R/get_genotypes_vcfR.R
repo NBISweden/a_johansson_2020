@@ -3,6 +3,7 @@
 #' @param x a vcfR object
 #' @param marker_names names of markers to extract
 #' @return genotype matrix ind x marker with counts of the reference allele
+#'
 get_genotypes_vcfR <- function(x, marker_names) {
   tmp <- extract.gt(x, return.alleles = F, as.numeric = F)[marker_names,]
 

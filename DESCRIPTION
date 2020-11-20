@@ -11,10 +11,13 @@ Description: Package contains functions for simulating
     methods.
 License: GPL-3
 Depends:
+    tidyverse,
+    magrittr
+Imports:
     GenABEL,
-    magrittr,
     SKAT,
-    tidyverse
+    lifecycle,
+    vcfR
 Suggests: 
     covr,
     testthat,
@@ -22,6 +25,4 @@ Suggests:
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
-Imports: 
-    lifecycle
 RdMacros: lifecycle

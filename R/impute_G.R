@@ -3,6 +3,8 @@
 #' @param G - genotype matrix (individuals in columns, markers in rows) to impute
 #' @description Imputes missing genotypes using minor allele frequency and assuming Hardy-Weinberg equilibrium
 #' @return an imputed matrix
+#' @export
+#'
 impute_G <- function(G) {
   G <- fix_allele_encoding(G)
   # Impute

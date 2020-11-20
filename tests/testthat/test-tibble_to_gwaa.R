@@ -1,5 +1,5 @@
 test_that("check the data structure is S4 and holds", {
-  test_data <<- tibble(
+  test_data <- tibble(
     chr = c(1),
     pos = c(1001,1002,1005,1017),
     snp = c('snp1', 'snp2', 'snp3', 'snp4'),
@@ -10,9 +10,9 @@ test_that("check the data structure is S4 and holds", {
     jill = c(1,1,1,2),
     elon = c(2,0,NA,1)
   )
-  sex <<- c(0,1,1,0,1)
-  trait <<- c(1.3,3.4,4.4,2.2,1.7)
-  result <<- tibble_to_gwaa(x = test_data, sex = sex, trait = trait)
+  sex <- c(0,1,1,0,1)
+  trait <- c(1.3,3.4,4.4,2.2,1.7)
+  result <- tibble_to_gwaa(x = test_data, sex = sex, trait = trait)
   expect_type(result, "S4")
   expect_s4_class(result, 'gwaa.data')
   expect_equal(GenABEL::nids(result), 5)

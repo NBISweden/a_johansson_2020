@@ -9,8 +9,9 @@
 #' @param beta_params_common parameters of the Beta distribution to simulate effect of common alleles
 #' @param perc_negative_common how many (per cent) common alleles have negative effect
 #' @param e a vector of mean and sd for the error term. Default (0, 1).
-#' @value vector of simulated phenotypes
-
+#' @return a vector of simulated phenotypes
+#' @export
+#'
 simulate_phenotype <- function(x,
                                thr_common_rare = 0.01,
                                N_rare,

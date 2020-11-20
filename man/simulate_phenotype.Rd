@@ -35,6 +35,9 @@ simulate_phenotype(
 
 \item{e}{a vector of mean and sd for the error term. Default (0, 1).}
 }
+\value{
+a vector of simulated phenotypes
+}
 \description{
 Simulate phenotype given a set of common and rare variants.
 }

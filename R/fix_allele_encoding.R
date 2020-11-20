@@ -10,6 +10,7 @@
 #' 1 - heterozygote,
 #' 2 - minor allele homozygote
 #' being simply the count of the minor allele
+#' @export
 #'
 fix_allele_encoding <- function(G) {
   for (marker in colnames(G)) {

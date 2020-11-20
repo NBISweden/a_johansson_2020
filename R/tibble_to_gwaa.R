@@ -24,7 +24,9 @@
 #' @param sex a vector of sex values: 0 - female, 1 - male
 #' @param trait a vector of trait values
 #' @param progress report progress every N individuals
+#' @import tidyverse magrittr
 #' @export
+#'
 tibble_to_gwaa <- function(x, sex, trait, progress = 1) {
   #   test_data <- tibble(
   #     chr = c(1),
@@ -63,7 +65,7 @@ tibble_to_gwaa <- function(x, sex, trait, progress = 1) {
   rdta <- raw(nbytes)
   i <- 1
   for (marker in marker_names) {
-    gtin <- x %>% filter(snp == marker) %>% select(all_of(ids))
+    gtin <- x %>% filter(snp == marker) %>% dplyr::select(all_of(ids))
     gchk <- (gtin == 0 | gtin == 1 | gtin == 2 | gtin == 3)
     if (!all(gchk)) {
       cat("Wrong genotype codes:\nCODE\tID\tSNP\n")

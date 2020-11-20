@@ -2,6 +2,8 @@
 #' @author Marcin Kierczak <marcin.kierczak@scilifelab.se>
 #' @param x a gwaa-data or a vcfR object
 #' @return vector of minor allele frequencies
+#' @export
+#'
 get_maf <- function(x) {
   obj_type <- class(x)
   if (obj_type == "gwaa.data") {
