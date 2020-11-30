@@ -4,14 +4,25 @@
 \alias{get_effects}
 \title{Get weights for markers using beta distribution.}
 \usage{
-get_effects(maf, N, shape12, thr = 0.01, rare = T, frac_negative = 0, seed = F)
+get_effects(
+  maf,
+  N,
+  get_betas_fun = dbeta,
+  get_betas_args = list(shape1 = 1, shape2 = 25),
+  thr = 0.01,
+  rare = T,
+  frac_negative = 0,
+  seed = F
+)
 }
 \arguments{
 \item{maf}{- vector of minor-allele frequencies}
 
 \item{N}{- number of markers to be assigned an effect}
 
-\item{shape12}{- a two element vector of Beta distribution shapes.}
+\item{get_betas_fun}{- name of a function for getting Beta parameters given a vector x of MAFs.}
+
+\item{get_betas_args}{- a list with additional function parameters for the function defined in `get_betas`}
 
 \item{thr}{- threshold for maf. All markers with maf <= thr will be treated as rare.}
 

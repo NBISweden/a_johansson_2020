@@ -7,7 +7,8 @@
 #' @param maf - vector of minor-allele frequencies
 #' @param N - number of markers to be assigned an effect
 #' @param thr - threshold for maf. All markers with maf <= thr will be treated as rare.
-#' @param shape12 - a two element vector of Beta distribution shapes.
+#' @param get_betas_fun - name of a function for getting Beta parameters given a vector x of MAFs.
+#' @param get_betas_args - a list with additional function parameters for the function defined in `get_betas`
 #' @param rare - a boolean, if TRUE, markers below and equal to the `thr` will be sampled, i.e. the rare variants
 #' @param frac_negative - fraction of effects to be set to negative
 #' @param seed - set seed for sampling, if FALSE, default `sample` seed will be used
@@ -15,7 +16,7 @@
 #' effects, one for each marker
 #' @export
 #'
-get_effects <- function(maf, N, shape12, thr=0.01, rare=T, frac_negative=0, seed = F) {
+get_effects <- function(maf, N, get_betas_fun = dbeta, get_betas_args = list(shape1 = 1, shape2 = 25), thr=0.01, rare=T, frac_negative=0, seed = F) {
   if (seed) {
     set.seed(seed)
   }
@@ -38,7 +39,12 @@ get_effects <- function(maf, N, shape12, thr=0.01, rare=T, frac_negative=0, seed
 
   idx <- sample(valid_markers, pmin(l, N), replace = F)
   signs <- sample(c(-1,1), N, replace = T, prob = c(frac_negative, 1 - frac_negative))
-  betas <- dbeta(x = maf[idx], shape1 = shape12[1], shape2 = shape12[2]) * signs
+
+  #### Simulate effects
+  sel_maf <- maf[idx] # Select desired maf values
+  betas <- do.call(what = get_betas_fun, args = c(x = as.name('sel_maf'), get_betas_args)) # Perform function call
+  betas <- betas * signs # Take care of effect directions
+
   output <- list(marker_idx = idx, effects = betas)
   return(output)
 }
