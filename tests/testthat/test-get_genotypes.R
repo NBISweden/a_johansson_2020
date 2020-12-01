@@ -13,5 +13,10 @@ test_that("getting genotypes works for vcfR data", {
   data(vcfR_test)
   snps <- c("rs6054257", "rs6040355", "microsat1")
   expect_warning(get_genotypes(vcfR_test, snps))
+})
 
+test_that("getting genotypes returns error if used on improper data object", {
+  tst <- list()
+  class(tst) <- 'bad_object'
+  expect_error(get_genotypes(tst))
 })
