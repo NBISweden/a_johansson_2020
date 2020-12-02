@@ -57,6 +57,7 @@ tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
   strand <- as.raw(rep(0, length(pos)))
 
   ofile <- file(output, 'w')
+  on.exit( close(ofile))
   cat(file = ofile, "#GenABEL raw data version 0.1\n")
   cat(file = ofile, ids, "\n")
   cat(file = ofile, marker_names, "\n")
@@ -72,9 +73,13 @@ tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
     if (!all(gchk)) {
       cat("Wrong genotype codes:\nCODE\tID\tSNP\n")
       wlst <- which(!gchk)
-      for (j in 1:length(wlst)) cat(gtin[wlst[j]], "\t",
-                                    ids[wlst[j]], "\t", marker_names[i], "\n")
-      stop("execution terminated")
+      for (j in 1:length(wlst)) {
+        tmp <- gtin-1
+        tmp[tmp < 0] <- NA
+        print(tmp)
+        #print(gtin[1,wlst[j]], "\t", ids[wlst], "\t", marker_names[i], "\n")
+      }
+      stop("Wrong encoding supplied! Execution terminated...")
     }
     rdta <- GenABEL:::put.snps(gtin)
     cat(file = ofile, rdta, "\n")
@@ -82,5 +87,4 @@ tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
       cat("Converted", i, "markers...\n")
   i <- i + 1
   }
-  close(ofile)
 }

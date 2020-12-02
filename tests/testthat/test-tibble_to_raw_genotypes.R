@@ -1,5 +1,5 @@
 test_that("tibble to raw genotype conversion works", {
-     test_data <<- tibble(
+     test_data <- tibble(
        chr = c(1),
        pos = c(1001,1002,1005,1017),
        snp = c('snp1', 'snp2', 'snp3', 'snp4'),
@@ -20,7 +20,7 @@ test_that("tibble to raw genotype conversion works", {
 })
 
 test_that("tibble to raw genotype conversion stops when some weird genotype coding is provided", {
-  test_data <<- tibble(
+  test_data <- tibble(
     chr = c(1),
     pos = c(1001,1002,1005,1017),
     snp = c('snp1', 'snp2', 'snp3', 'snp4'),
@@ -31,5 +31,6 @@ test_that("tibble to raw genotype conversion stops when some weird genotype codi
     jill = c(1,1,1,2),
     elon = c(2,0,NA,1)
   )
+
   expect_error(tibble_to_raw_genotypes(x = test_data, output = path, progress = 1))
 })
