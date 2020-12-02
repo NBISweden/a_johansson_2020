@@ -67,7 +67,7 @@ tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
   rdta <- raw(nbytes)
   i <- 1
   for (marker in marker_names) {
-    gtin <- x %>% filter(snp == marker) %>% select(all_of(ids))
+    gtin <- x %>% dplyr::filter(snp == marker) %>% dplyr::select(all_of(ids))
     gchk <- (gtin == 0 | gtin == 1 | gtin == 2 | gtin == 3)
     if (!all(gchk)) {
       cat("Wrong genotype codes:\nCODE\tID\tSNP\n")
