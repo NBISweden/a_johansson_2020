@@ -11,5 +11,10 @@ test_that("tibble to raw genotype conversion works", {
        elon = c(2,0,NA,1)
      )
   local_edition(3)
-  expect_snapshot(tibble_to_raw_genotypes(x = test_data, output = 'gtypes.raw', progress = 1))
+  helper <- function() {
+    path <- tempfile(fileext = ".raw")
+    tibble_to_raw_genotypes(x = test_data, output = path, progress = 0)
+    return(path)
+  }
+  expect_snapshot_file(helper(), "genotypes.raw")
 })
