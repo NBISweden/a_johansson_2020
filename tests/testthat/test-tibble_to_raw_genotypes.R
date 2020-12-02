@@ -31,5 +31,6 @@ test_that("tibble to raw genotype conversion stops when some weird genotype codi
     jill = c(1,1,1,2),
     elon = c(2,0,NA,1)
   )
+
   expect_error(tibble_to_raw_genotypes(x = test_data, output = path, progress = 1))
 })

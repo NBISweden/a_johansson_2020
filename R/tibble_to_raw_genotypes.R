@@ -74,7 +74,7 @@ tibble_to_raw_genotypes <- function(x, output = 'genotypes.raw', progress = 1) {
       wlst <- which(!gchk)
       for (j in 1:length(wlst)) cat(gtin[wlst[j]], "\t",
                                     ids[wlst[j]], "\t", marker_names[i], "\n")
-      stop("execution terminated")
+      simpleError("Wrong encoding supplied! Execution terminated.", call = NULL)
     }
     rdta <- GenABEL:::put.snps(gtin)
     cat(file = ofile, rdta, "\n")
