@@ -21,30 +21,32 @@ get_effects <- function(maf, N, get_betas_fun = dbeta, get_betas_args = list(sha
     set.seed(seed)
   }
   if (max(maf) > 1 | min(maf) < 0) {
-    warning(paste0("Weird values of maf detected. min: ", min(maf), " max: ", max(maf), "!"))
+    warning(paste0("Weird values of maf detected. min: ",
+                   min(maf), " max: ", max(maf), "!"))
   }
   if (rare) {
     valid_markers <- which(maf <= thr & maf > 0)
-  } else {
+  }
+  else {
     valid_markers <- which(maf > thr & maf < 1)
   }
-
   l <- length(valid_markers)
   if (l == 0) {
     warning("No markers matching criteria in the region! Returning NULL!")
     return(NULL)
-  } else if ( l < N) {
-    warning(paste0('Expected ', N, ' markers while only ', l, ' match maf criteria!'))
   }
-
-  idx <- sample(valid_markers, pmin(l, N), replace = F)
-  signs <- sample(c(-1,1), N, replace = T, prob = c(frac_negative, 1 - frac_negative))
-
-  #### Simulate effects
-  sel_maf <- maf[idx] # Select desired maf values
-  betas <- do.call(what = get_betas_fun, args = c(x = as.name('sel_maf'), get_betas_args)) # Perform function call
-  betas <- betas * signs # Take care of effect directions
-
+  else if (l < N) {
+    warning(paste0("Expected ", N, " markers while only ",
+                   l, " match maf criteria!"))
+    N <- l
+  }
+  idx <- sample(valid_markers, N, replace = F)
+  signs <- sample(c(-1, 1), N, replace = T, prob = c(frac_negative,
+                                                     1 - frac_negative))
+  sel_maf <- maf[idx]
+  betas <- do.call(what = get_betas_fun, args = c(x = as.name("sel_maf"),
+                                                  get_betas_args))
+  betas <- betas * signs
   output <- list(marker_idx = idx, effects = betas)
   return(output)
 }
