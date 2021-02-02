@@ -1,0 +1,193 @@
+---
+title: "Example simulation"
+author: "Marcin Kierczak"
+date: "10/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Introduction
+
+In this document, I show example simulation workflow using implemented functions.
+The main idea is to take a real dataset and, based on the actual genotypes at a locus (or more loci), simulate phenotype. Loci are selected in random fashion, but they have certain desired characteristics, namely they fall into a certain minor-allele frequency (maf) bin and they have given effect sizes (also related to the maf).
+
+In this document, we will use datasets supplied by the `GenABEL` package.
+
+```{r setup_pkg}
+library('GenABEL')
+library('SKAT')
+library('here')
+library('tidyverse')
+source(here('/R/get_effects.R'))
+source(here('/R/plot_effects.R'))
+source(here('/R/impute_G.R'))
+source(here('/R/get_genotypes.R'))
+source(here('/R/fix_allele_encoding.R'))
+source(here('/R/tibble_to_raw_genotypes.R'))
+source(here('/R/tibble_to_gwaa.R'))
+
+plot_pheno <- function(y, G) {
+  data <- tibble(id = rownames(G), y = y)
+  ggplot(data, mapping = aes(x=y)) + geom_histogram() + theme_bw()
+}
+```
+After this initial setup, we can load the actual data and look at its dimensions:
+```{r load_data}
+data(srdta)
+nids(srdta) 
+nsnps(srdta) 
+```
+
+
+### Extracting and preparing data
+
+In this step, we will extract marker summary data, compute reference allele frequency from allele counts and compute minor allele frequency.
+
+```{r prepare_G}
+tmp <- summary(srdta@gtdata)
+raf <- ((2 * tmp$P.22) + tmp$P.12) / (2 * tmp$NoMeasured) # reference allele frequency
+maf <- pmin(raf, 1 - raf)
+names(maf) <- colnames(srdta@gtdata)
+```
+Above, we made sure we are getting the actual minor allele frequency, not the arbitrary reference 
+allele frequency as done in GenABEL.
+
+### Modelling effects for common markers
+Now, we are ready to simulate some effects based on, in this case, $N = 2$ randomly selected loci with $maf > 0.05$ (common variants). We say, the effect of each allele should be proportional to its maf and this relationship is given by the ${\beta}$ distribution with shape parameters set to `c(0.1, 0.1)`. We will not model any markers with negative effect here. 
+
+```{r get_effect_common}
+# Get effects for common alleles
+common <- get_effects(maf = maf, thr = 0.05,
+                              N = 2,
+                              shape12 = c(.1,.1),
+                              rare = F,
+                              frac_negative = 0)
+```
+We can have a quick look at wgat the `get_effects` function has returned. 
+```{r get_effects_return}
+str(common)
+common
+```
+We can see it is a list with two elements: marker indices (and names) and their effects.
+
+### Extracting genotypes matrix
+Now, we will get the actual genotypes at the loci used for simulation. We than convert them to *double* so that the genotypes matrix $G$ contains allele counts. We need to make sure that the genotypes matrix contains the minor allele count and not some other reference allele count which we do by calling the `fix_allele_encoding` function. Finally, we impute missing genotypes based on maf value and following the Hardy-Weinberg principle using the `impute_G` function.
+
+```{r extracting_G}
+genos_common <- srdta@gtdata[,common$marker_idx]
+      G_comm <- as.double(genos_common) %>%
+      fix_allele_encoding() %>%
+      impute_G(maf = maf[common$marker_idx])
+```
+Let's gave a look at the genotypes matrix (here, for the 5 first individuals):
+```{r look_at_G}
+G_comm[1:5, ]
+```
+Indeed, we see that the matrix contains minor allele counts at each locus and for every individual. This is exactly what we do need to simulate our phenotypes.
+
+### Simulating phenotypes
+
+In order to simulate phenotypes, one can use standard linear model $y = X\beta + \epsilon$ equation with $X = G$. We have everything we need:
+
+* the genotypes matrix $G$,
+* the effects vector $\beta$ and
+* the Gaussian error term $\epsilon \sim \mathcal{N}(0, 1)$
+
+```{r sim_phenos, warning=FALSE}
+y_comm <- G_comm %*% common$effects + rnorm(n = dim(G_comm)[1], mean = 0, sd = 1)
+plot_pheno(y_comm, G_comm)
+```
+
+### GWAS on the simulated phenotype
+
+Now, in order to test whether it works, we need to inject the simulated phenotype to the GenABEL *gwaa.data* object:
+
+```{r qt_common_inject}
+srdta@phdata[,'qt1'] <- y_comm
+```
+
+After having done this, we can perform a regular GWAS:
+
+```{r GWAS_common}
+qt <- qtscore(qt1 ~ sex, data = srdta)
+```
+
+And, finally, plot the results making markers used for simulation easily distinguishable by coloring them red.
+
+```{r plot_GWAS_common}
+plot(qt, las=1, cex.axis = .7, col = 'darkgreen', cex=.5)
+grid()
+col <- as.numeric(common$effects > 0)
+col[col == 1] <- 'red'
+col[col == 0] <- 'blue'
+(simulated <- names(common$effects))
+points(qt[simulated,]$Position, -log10(qt[simulated,]$P1df), col=col, pch=19)
+```
+
+### SKATO on the simulated phenotype
+
+Now, we can proceed to testing SKATO's behavior at different parameters.
+First, we will create a special function that will let us simulate effect based on a number of rare alleles and directly
+test SKATO on these data. 
+
+```{r test_rare_SKATO}
+library(SKAT)
+
+run_SKAT_test <- function(N_trials = 10, N_markers = 20, maf, data, shape12 = c(1,25), frac_negative = .2) {
+  result <- rep(NA, times = N_trials)
+    i <- 1
+    for (i in 1:N_trials) {
+    rare <- get_effects(maf = maf, thr = 0.01,
+                      N = N_markers,
+                      shape12 = c(1,25),
+                      rare = T,
+                      frac_negative = frac_negative)
+    genos_rare <- data@gtdata[,rare$marker_idx]
+    G_rare <- as.double(genos_rare) %>% fix_allele_encoding() %>% impute_G(maf = maf[rare$marker_idx])
+    y_rare <- G_rare %*% rare$effects + rnorm(n = dim(G_rare)[1], mean = 0, sd = 1)
+    srdta@phdata[,'qt1'] <- y_rare
+    skat_null_model <- SKAT_Null_Model(qt1~sex, data = srdta@phdata)
+    skat_model <- SKAT(G_rare, skat_null_model, method = 'SKATO')
+    result[i] <- skat_model$p.value
+    i <- i + 1
+  }
+  return(result)
+}
+```
+
+Now, we can define our hyperparameters space:
+
+* we do 10 trials per set of parameters,
+* we want to simulate effects using 4 different $\beta$ distributions: $\beta_1(1,1), \beta_2(1,10), \beta_3(1,20)$ and $\beta_4(1,25)$,
+* for every distribution, we have 20\% markers with negative effect,
+* we simulate phenotype based on 20 randomly selected markers.
+ 
+```{r skato_params_space}
+N_trials <- 10
+N_markers <- 20
+experiment <- expand.grid(beta1 = c(1), beta2 = c(1, 10, 20, 25), frac_neg = c(.2))
+
+result <- matrix(NA, nrow = dim(experiment)[1], ncol = N_trials)
+for (i in 1:dim(experiment)[1]) {
+  pvals <- run_SKAT_test(N = N_trials,
+                         N_markers = N_markers,
+                         maf = maf,
+                         data = srdta,
+                         shape12 = c(experiment$beta1[i], experiment$beta2[i]),
+                         frac_negative = experiment$frac_neg[i])
+  result[i, ] <- pvals
+}
+```
+
+Finally, we can do some plotting:
+
+```{r skato_rare_plot}
+label <- paste0("case_B(",experiment$beta1,"_",experiment$beta2,")_neg=",experiment$frac_neg)
+experiment_data <- data.frame(experiment=label, result)
+experiment_data %>% as_tibble() %>% replace(. == 0, 1e-320) %>%
+  pivot_longer(cols = -1, names_to = 'trial') %>%
+  ggplot(mapping = aes(x = experiment, y = -log10(value), group=experiment)) + geom_boxplot()
+```
