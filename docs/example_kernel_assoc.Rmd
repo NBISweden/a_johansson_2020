@@ -1,18 +1,20 @@
 ---
-title: "Simple simulation using VCF file"
+title: "Simulation more complex architectures in defined gene sets (vcf & bed input)"
 author: "Marcin Kierczak"
-date: "02/02/2021"
+date: "03/19/2021"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library('vcfR')
+#library('vcfR')
 library('stringr')
 library('gwasim')
+library('reticulate')
 ```
+
 ## Synopsis
-This document documents an example toy analyses of a VCF file with genotyping data using the `gwasim` package.
+This document documents a bit more advanced example analyses of defined gene sets (bed file) in a whole genome (VCF file) using the `gwasim` package.
 Package can be installed by typing: `devtools::install_github("NBISweden/a_johansson_2020")`. For further details visit [gwasim GitHub pages](https://github.com/NBISweden/a_johansson_2020).
 
 ## Setup
@@ -26,46 +28,50 @@ Next, load the packages:
 ```{r setup_noexec, eval=FALSE}
 library('vcfR')
 library('stringr')
+library('data.table')
 library('gwasim')
 ```
 
 ## Reading data
+
+Because VCF files can be really large, we will have to emplot the windowing strategy, i.e. read a number of variants into memory, check if they are in any region of interest and discard the variants outside pre-defined regions.
+
+### Read genic regions of interest from bed file
+
+In this step, we will load gene regions of interest, in this case, promotor regions, and match them to the available genomic data. In this case, we will focus on only one chromosome, chr22. Data defining our regions is stored in a `.bed` file. We need to remember that bed files have their coordinates based at 0 while VCF files are 1-based (see, e.g. [details](https://www.biostars.org/p/84686/))
+```{r read_bed}
+bed_data <- read_delim("~/Projects/johansson/promoters.bed", delim = " ", col_names = c('chr', 'start', 'end', 'feature'))
+
+# Convert to 1-based coords used by the VCF format, filter out unnecessary data
+bed_data %<>% 
+  mutate(start = start + 1) %>% 
+  select(-feature) %>%
+  filter(chr == "chr22")
+```
+
+## Read VCF in chunks
 For the sake of learning how to use `gwasim` we will read first 500 rows (markers) from the `ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz` file. This file contains 1000 genomes phase 3 data for human chromosome 22. The file can be downloaded from the 1000 Genomes data repository via FTP [link](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/).
 
+> NOTE! For this part of the analysis, we need to setup Python whic we will use for improved efficiency of reading indexed VCF files in chunks.
+
+```{r setup_python_noexec, eval = F}
+reticulate::py_install('pandas', pip = T)
+reticulate::py_install('pyvcf', pip = T)
+```
+
 ```{r load_data, cache=TRUE}
-input_vcf <- '~/Projects/johansson/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz'
-vcf_data <- vcfR::read.vcfR(file = input_vcf, nrows = 500)
-markers <- vcf_data@fix[,'ID'] # Extract marker names
-coords <- vcf_data@fix[, 'POS'] # Extract genomic marker coordinates
-```
-
-We discovered that we need some simple data cleaning because we had few problematic entries in the VCF file. You should always examine your particular dataset for any oddities, try to understand their source and either filter them out or, better, fix them in some other way.
-```{r clean_data}
-to_remove <- which(str_detect(markers, ";")) # detect weird markers (multi-marker)
-markers <- markers[-to_remove]
-coords <- coords[-to_remove]
-```
-
-## Get genotypes
-
-Now, let us build a genotyping matrix $G$. We will narrow down our scope to the first 10 markers. First, we use `gwasim::get_genotypes()` to retrieve the genotypes, next we pipe our data stream to the `gwasim::fix_allele_encoding` function which recodes the $G$ matrix. By doing so, we make sure the major homozygote will be encoded as 0, minor homozygote as 2 and heterozygotes as 1. In another words, our genotyping matrix now contains a *per locus* count of minor alleles. Finally, we impute the missing genotypes by inserting the most common genotype at all `NA` loci. 
-
-> Note that this step may potentially change which allele is minor but it **will not** be reflected in the encoding.
-```{r get_gt}
-G <- gwasim::get_genotypes(x = vcf_data, marker_names = markers[1:10]) %>% 
-  gwasim::fix_allele_encoding() %>%
+path <- "/Users/kiero/Projects/johansson/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz"
+reader <- reticulate::import("vcf_region_reader")
+i <- 1
+region <- paste0(bed_data[i,'chr'], ':', bed_data[i,'start'], '-', bed_data[i,'end']) %>%
+  str_remove("chr")
+data <- reader$vcf_region_reader(reticulate::r_to_py(path), region)
+G <- data %>% 
+  gwasim::fix_allele_encoding() %>% 
   gwasim::impute_G()
-```
-
-## Compute maf
-
-Once the data have been loaded, we can start looking at the data. Let's plot e.g. the minor allele frequency and check that it is the same as the reference (minor) allele frequency, i.e. that the `gwasim::fix_allele_encoding` function worked as it is supposed to and to see if imputations had any effect on maf. 
-
-```{r compute_maf}
-raf <- colSums(G) / (2 * dim(G)[1])
-maf <- pmin(raf, 1 - raf)
-plot(maf, cex=.5, col='slateblue', type='l', las=1, cex.axis=.5)
-plot(maf-raf, cex=.5, col='tomato', type='l', las=1, cex.axis=.5)
+G <- as.matrix(apply(G, 2, as.integer))
+if (!('gwasim' %in% class(G))) class(G) <- c(class(G), 'gwasim')
+maf <- get_maf(x)
 ```
 
 ## Simulate effect of rare alleles for genotype
