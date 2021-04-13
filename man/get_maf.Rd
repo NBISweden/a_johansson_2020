@@ -7,7 +7,7 @@
 get_maf(x)
 }
 \arguments{
-\item{x}{a gwaa-data or a vcfR object}
+\item{x}{a gwaa-data, a vcfR or a gwasim object}
 }
 \value{
 vector of minor allele frequencies

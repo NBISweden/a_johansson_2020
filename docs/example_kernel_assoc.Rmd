@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library('stringr')
 library('gwasim')
 library('reticulate')
+library('SKAT')
 ```
 
 ## Synopsis
@@ -30,6 +31,7 @@ library('vcfR')
 library('stringr')
 library('data.table')
 library('gwasim')
+library('SKAT')
 ```
 
 ## Reading data
@@ -62,83 +64,32 @@ reticulate::py_install('pyvcf', pip = T)
 ```{r load_data, cache=TRUE}
 path <- "/Users/kiero/Projects/johansson/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz"
 reader <- reticulate::import("vcf_region_reader")
-i <- 1
-region <- paste0(bed_data[i,'chr'], ':', bed_data[i,'start'], '-', bed_data[i,'end']) %>%
+N_sim <- 10
+curr_sim <- 1
+N_markers <- 5
+results <- vector(mode = "list", length = N_sim)
+while (curr_sim <= N_sim) {
+  i <- sample(x = 1:dim(bed_data)[1], size = 1) # Select random region from bed
+  region <- paste0(bed_data[i,'chr'], ':', bed_data[i,'start'], '-', bed_data[i,'end']) %>%
   str_remove("chr")
-data <- reader$vcf_region_reader(reticulate::r_to_py(path), region)
-G <- data %>% 
-  gwasim::fix_allele_encoding() %>% 
-  gwasim::impute_G()
-G <- as.matrix(apply(G, 2, as.integer))
-if (!('gwasim' %in% class(G))) class(G) <- c(class(G), 'gwasim')
-maf <- get_maf(x)
+  data <- reader$vcf_region_reader(reticulate::r_to_py(path), region)
+  G <- data %>% 
+    gwasim::fix_allele_encoding() %>% 
+    gwasim::impute_G()
+  G <- as.matrix(apply(G, 2, as.integer))
+  if (!('gwasim' %in% class(G))) class(G) <- c(class(G), 'gwasim')
+  maf <- get_maf(G)
+  effects <- gwasim::get_effects(maf=maf, thr=0.01, N=N_markers, get_betas_fun = dbeta, get_betas_args =
+                                   list(shape1 = .1, shape2 = .1), rare=T, frac_negative=0, seed = 2)
+  ## Filter 
+  if (length(effects$marker_idx) >= N_markers) {
+    error_term <- rnorm(n = dim(G)[1], mean = 0, sd = 1)
+    y <- pmax(0, G[, effects$marker_idx] %*% effects$effects + error_term)
+    results[[curr_sim]] <- list(marker_idx = effects$marker_idx, effects = effects$effects, y = y)
+    null <- SKAT::SKAT_Null_Model(y ~ 1)
+    skat <- SKAT::SKAT_CommonRare(G, obj = null)
+    curr_sim <- curr_sim + 1
+  }
+}
 ```
 
-## Simulate effect of rare alleles for genotype
-Now, it is time to do some basic simulations, i.e. to simulate phenotypic values based on the genotypes in our `G`. 
-To this end, we will use `gwasim::get_effects`. In this simple example (we will show more complex scenarios later in this document), we would like to simulate the following genetic architecture affecting phenotype:
-
-* there are two randomly selected loci in the region that affect the phenotype,
-* loci are selected only from the rare alleles with $maf <= 0.01$,
-* the effects of the two loci are drawn from Beta distribution with shape parameters set to .1 and .1,
-* all effects are positive, i.e. both selected loci have an additive positive effect.
-
-```{r simulate_effects}
-effects <- gwasim::get_effects(maf=maf, thr=0.01, N=2, get_betas_fun = dbeta, get_betas_args = list(shape1 = .1, shape2 = .1), rare=T, frac_negative=0, seed = 2)
-effects
-```
-Here, we can see that, indeed, two markers have been selected: `rs587720402` and `rs587638893` and the effects at these loci are: $\beta_{rs587720402} = 13.66754$ and $\beta_{rs587638893} = 31.14350$ respectively. We are than ready to simulate our phenotype.
-
-## Compute simulated phenotypes
-
-First, we want some noise in our phenotype to simulate the effect of environment, other loci or simply the measurement error. Let us add some very tiny noise here sampled from $\mathcal{N}(0, 1)$.
-```{r compute_phenos}
-error_term <- rnorm(n = dim(G)[1], mean = 0, sd = 1)
-# Check the error is as you want it
-plot(error_term, pch=19, cex=.5, las=1)
-hist(error_term)
-```
-Luckily, our error seems to be what we want -- it looks normally distributed around 0 and also it is pretty homogenous.
-Having this last bit ready, we can simulate our phenotype according to the $\hat{y} = G \times \beta + \epsilon$:
-```{r}
-# Simulate phenotypes (here we do not want negative phenotype values so, we set them to 0)
-y <- pmax(0, G[, effects$marker_idx] %*% effects$effects + error_term)
-plot(y, 1:length(y), pch = 1 + rowSums(G[, effects$marker_idx]), xlab='individual', ylab='phenotype', las=1, cex.axis=.7, main = "Simulated phenotype per individual")
-```
-
-Indeed, we see there are a number of `rs587720402` heterozygotes with phenotype close to the effect of $13.67 + \epsilon$ and one heterozygote at `rs587638893` with phenotype close to the corresponding effect of $58.09 + \epsilon$.
-We can check it matches the values in the $G$ matrix:
-```{r check_in_G}
-G[rowSums(G[, effects$marker_idx]) > 0, effects$marker_idx]
-```
-
-## Testing GWAS models.
-
-Now, it'd be really interesting to see whether a tool for genome-wide association studies, e.g. GenABEL can single out our markers that were used for simulation. Let's try. Now things are becoming exciting and one can start asking different research questions. 
-
-```{r data_to_gwaa, cache=TRUE}
-library('GenABEL')
-test_header <- tibble(
-       chr = c(22),
-       pos = as.numeric(coords[1:10]),
-       snp = colnames(G),
-       strand = c('u')
-)
-test_G <- as_tibble(t(G))
-test_data <- cbind(test_header, test_G)
-data <- gwasim::tibble_to_gwaa(test_data, sex=rep(2, times=dim(G)[1]), trait=y, progress = F)
-qt <- GenABEL::qtscore(y~1, data)
-plot(qt@annotation$Position,-log10(qt@results$P1df), pch=19, cex=.5)
-best <- which.min(qt@results$P1df)
-qt@results[best,]
-```
-What happened with our `rs587720402` marker, it did not pop up in the Manhattan plot. Apparently its effect got masked... Let us do a conditional analysis this time and see whether it does help:
-```{r cond_analysis}
-top_gt <- as.double(data@gtdata[,'rs587670191'])
-qt_cond <- GenABEL::qtscore(y~top_gt, data)
-plot(qt_cond@annotation$Position,-log10(qt_cond@results$P1df))
-points(qt@annotation$Position,-log10(qt@results$P1df), pch=19, cex=.5)
-best <- which.min(qt_cond@results$P1df)
-qt_cond@results[best,]
-```
-Hurray! Our conditional analysis worked! On the plot above, you can see old, non-conditional results as black filled points while the results of the conditional analysis are in shown as hollow circles.
