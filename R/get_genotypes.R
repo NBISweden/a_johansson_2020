@@ -14,5 +14,6 @@ get_genotypes <- function(x, marker_names) {
   } else {
     stop('Data format not supported, expecting GenABEL gwaa.data or vcfR')
   }
+  if (!('gwasim' %in% class(G))) class(G) <- c(class(G), 'gwasim')
   return(G)
 }

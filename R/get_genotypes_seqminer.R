@@ -1,11 +1,12 @@
-#' @title Get genotypes matrix (counts of reference allele) from a GenABEL gwaa-data object
+#' @title Get genotypes matrix (counts of reference allele) from one of the seqminer
+#' read functions that return genotype matrix
 #' @author Marcin Kierczak <marcin.kierczak@scilifelab.se>
-#' @param x a gwaa.data object (GenABEL internal format)
+#' @param x an object returned by seqminer *Matrix* function
 #' @param ind_names names of the individuals to extract
 #' @param marker_names names of the markers to extract
 #' @return genotype matrix ind x marker with counts of the reference allele
 #'
-get_genotypes_gwaa_data <- function(x, ind_names = NULL, marker_names = NULL) {
+get_genotypes_seqminer_matrix <- function(x, ind_names = NULL, marker_names = NULL) {
   if (is.null(marker_names)) {
     tmp <- x@gtdata
   } else {
