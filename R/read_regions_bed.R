@@ -5,6 +5,7 @@
 #' chromosome names should begin with 'chr'. The returned coordinates are in the VCF coordinates (1-based).
 #' @param bed_file path to the standard headerless bed file
 #' @return a tibble with region name,chromosome, start coord, end coord (in VCF 1-based coords) and region size
+#' @export
 #'
 read_regions_bed <- function(bed_file) {
   bed_data <- read.table(bed_file, header = F) %>%
