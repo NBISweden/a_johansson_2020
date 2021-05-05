@@ -17,7 +17,7 @@ count_by_maf <- function(regions, vcf_file, maf_threshold = 0.01) {
     count_gt <- sum(maf > maf_threshold)
     count_leq <- sum(maf <= maf_threshold)
     n_markers <- dim(geno)[1]
-    tmp <- list(region = x, n_loci = n_markers, n_above = count_gt, n_below = count_leq)
+    tmp <- list(region = x, n_loci = n_markers, n_gt = count_gt, n_leq = count_leq)
     tmp
   }
   result <- map(y, ~data.frame(.)) %>%
