@@ -7,16 +7,18 @@
 #' @param vcf_file path to vcf file containing genotypes
 #' @param maf_threshold maf threshold for counting loci
 #' @return a tibble with region name, total count of loci, count of loci above and below the maf threshold
+#' @export
 #'
 count_by_maf <- function(regions, vcf_file, maf_threshold = 0.01) {
   registerDoFuture()
   y <- foreach(x = regions$region) %dopar% {
-    geno <- seqminer::readVCFToMatrixByRange(vcf_file, range = x)[[1]]
-    n_alleles <- 2 * dim(geno)[2]
-    maf <- pmin(rowSums(geno) / n_alleles, 1 - (rowSums(geno) / n_alleles))
-    count_gt <- sum(maf > maf_threshold)
-    count_leq <- sum(maf <= maf_threshold)
-    n_markers <- dim(geno)[1]
+    #geno <- seqminer::readVCFToMatrixByRange(vcf_file, range = x)[[1]]
+    #n_alleles <- 2 * dim(geno)[2]
+    #maf <- pmin(rowSums(geno) / n_alleles, 1 - (rowSums(geno) / n_alleles))
+    tmp <- read_region_vcf(locus = x, vcf_file = vcf_file, force_silent = T)
+    count_gt <- sum(tmp$maf > maf_threshold)
+    count_leq <- sum(tmp$maf <= maf_threshold)
+    n_markers <- length(tmp$maf)
     tmp <- list(region = x, n_loci = n_markers, n_gt = count_gt, n_leq = count_leq)
     tmp
   }
