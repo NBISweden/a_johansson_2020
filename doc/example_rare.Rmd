@@ -1,0 +1,307 @@
+---
+title: "Simulate the effect of multiple rare alleles"
+author: "Marcin Kierczak"
+date: "5/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Synopsis
+The goal of this small experiment is to, given a list of functional regions (= gene sets, e.g. promoter regions):
+
+* select a focal region that will be our "true positive",
+* simulate phenotype based on the *focal region*,
+* run SKAT-O to get p-value for the focal region,
+* run SKAT-O to obtain p-values for all the remaining functional regions,
+
+The above procedure can be repeated a number of times with different, randomly selected focal regions.
+The main insights one can get from such procedure are:
+
+* how many times (= how many functional regions) show association at least equally significant to the association
+observed for the focal region. These can be regarded as "false positives" although they are not necessarily 
+false positives in the most common meaning of this term (e.g. they can be in high LD with the focal region). Therefore, here, we will call them *adjunct positives*.
+* what is the distribution of the "adjunct positives" as a function of the distance between the focal region and the region that 
+generated an *adjunct positive*.
+
+# Initial preparations
+First, we will load necessary libraries:
+```{r load_libs, include=FALSE}
+library('stringr')
+library('gwasim')
+library('seqminer')
+library('SKAT')
+library('purrr')
+```
+```{r load_libs_txt, eval=FALSE}
+library('stringr')
+library('gwasim')
+library('seqminer')
+library('SKAT')
+library('purrr')
+```
+```{r fns, include=FALSE}
+hush <- function(code) {
+  sink("NUL") # use /dev/null in UNIX
+  tmp = code
+  sink()
+  return(tmp)
+}
+
+process_focal_region <- function(vcf_file, regions, N_markers, valid_regions, arch_fun) {
+  is_selected <- FALSE
+  while (!is_selected) {
+    # Randomly draw a region to base simulation upon:
+    # select random region from bed by shuffling valid regions and taking the first one
+    set.seed(NULL)
+    rnd <- sample(which(valid_regions == 1), size = 1)
+    locus <- regions[rnd]
+
+    # Extract the region
+    focal_region <- hush(seqminer::readVCFToMatrixByRange(vcf_file, range = locus))[[1]]
+    G <- focal_region %>%
+      t() %>%
+      gwasim::impute_G() %>%
+      gwasim::fix_allele_encoding()
+
+    if (!('gwasim' %in% class(G)))
+      class(G) <- c(class(G), 'gwasim')
+
+    maf <- gwasim::get_maf(G)
+    #effects <- gwasim::get_effects(maf=maf, thr=0.01, N=N_markers, get_betas_fun = dbeta,
+    #get_betas_args = list(shape1 = .1, shape2 = .1), rare=T, frac_negative=0, seed = 2)
+    effects <- arch_fun(maf = maf, N = N_markers)
+
+    # Filter: Check if the selected region contains at least N_markers rare markers
+    if (length(effects$marker_idx) == N_markers) {
+      is_selected = TRUE
+    } else {
+      print(paste0('Marking ', locus, ' invalid.'))
+      valid_regions[rnd] <- 0
+    }
+  }
+  result <- list(region = locus, maf = maf, effects = effects, G = G, valid_regions = valid_regions)
+  return(result)
+}
+```
+Next, we need to define where our files are:
+```{r select_files}
+bed_file <- "/Users/kiero/Projects/johansson/promoters.bed"
+vcf_file <- "/Users/kiero/Projects/johansson/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz"
+chr_list <- c('chr22')
+```
+The `bed_file` is a standard bed file with *gene sets* defined by their name and coordinates. The `vcf_file` is a standard VCF file that contains genotypes of a number of individuals. The `chr_list` variable is a vector of chromosome names we are interested in. In this example, we will focus on chromosome 22 only. 
+
+## Reading and processing *gene sets*
+At this stage, we want to read-in the *gene sets* data from our bed file and transform it to a format that is suitable for
+`gwasim` functions:
+
+```{r read_bed}
+bed_data <- read_delim(bed_file, delim = " ", col_names = c('chr', 'start', 'end', 'feature'))
+# Convert to 1-based coordinates used by the VCF format, filter out unnecessary data
+bed_data %<>%
+  mutate(start = start + 1) %>%
+  select(-feature) %>%
+  filter(chr %in% chr_list)
+bed_data %>% head()
+```
+We can see that we have a neat tibble that contains the chromosome, the start coordinate and the end coordinate of each region (row). What we need is names in the format used by VCF, i.e. `chr_no:start_coord-end_coord`. Let's generate a vector of regions in this format:
+```{r construct_region_names}
+regions <- paste0(str_remove(bed_data$chr, 'chr'), ':', bed_data$start, '-', bed_data$end)
+regions[1:5]
+```
+Everything seems to be fine! We can proceed!
+
+# Simulation 
+
+## Defining genetic architecture underlying simulation
+It seems appropriate to reflect upon the genetic architecture we are aiming at simulating. Say, we want to simulate our genotype effects according to the following:
+
+* only rare alleles are contributing to the phenotype,
+* rare allele is an allele with maf <= 0.01 (1 per-cent),
+* we want to simulate the effect of 5 rare alleles per focal region,
+* effects of all markers are positive,
+* effects are related to maf by $\beta(0.1, 0.1)$ distribution, i.e. maf does not have any contribution to the effect.
+
+```{r define_architecture}
+gen_arch <- function(maf, N=N_markers) {
+  result <- gwasim::get_effects(maf=maf, thr=0.01, N, get_betas_fun = dbeta, 
+                                get_betas_args = list(shape1 = .1, shape2 = .1), 
+                                rare=T, 
+                                frac_negative=0, 
+                                seed = 2)
+  return(result)
+}
+```
+Once the architecture has been defined, we can quickly check what is the `process_focal_region` returning.
+To, later in our code, speed up computations, we will have a list of valid regions, i.e. the markers that are elligible for
+being used as *focal region*. In this concrete example, whenever `process_focal_region` draws a region that contains less than 5 markers that are rare, it will update the list of valid markers and future iterations will no longer be considering this region.
+```{r process_focal_region_ex}
+valid_regions <- rep(1, times = length(regions))
+tmp <- process_focal_region(vcf_file = vcf_file, regions = regions, N_markers = 5, valid_regions = valid_regions, arch_fun = gen_arch)
+str(tmp)
+```
+The structure returned by *process_focal_region* is a list of 5 elements:
+
+* `region` -- name of the focal region,
+* `maf` -- vector of minor allele frequencies for markers inside the focal region,
+* `effects` -- a list containing 
+    * indexes of the markers used for simulating effects,
+    * the simulated effects,
+* `G` -- genotypes matrix for the entire focal region,
+* `valid_regions` -- an updated list of valid (1) and invalid (0) regions.
+
+# The actual simulation 
+
+Time to proceed to the actual simulation loop!
+
+## Environment preparations
+
+We will run 100 simulations (100 different focal regions). As discussed above, we will use the regions where we can simulate
+effects based on 5 loci with rare variants.
+```{r sim_prep_env1}
+N_sim <- 100
+N_markers <- 5
+```
+In addition, we need to allocate memory and set simulation counter to 1:
+```{r sim_prep_env2}
+curr_sim <- 5
+results <- vector(mode = "list", length = N_sim)
+```
+
+## Main simulation loop
+```{r sim_pheno} 
+sim_pheno <- function(focal_region) {
+  # Extract variables returned by the process_focal_region
+  effects <- focal_region$effects
+  G <- focal_region$G
+  valid_regions <- focal_region$valid_regions
+  
+  ## Simulate phenotype
+  error_term <- rnorm(n = dim(G)[1], mean = 0, sd = 1)
+  y <- pmax(0, G[, effects$marker_idx] %*% effects$effects + error_term)
+  sim_params <- list(marker_idx = effects$marker_idx, effects = effects$effects, y = y)
+  
+  ## Run SKAT null model
+  null_model <- SKAT::SKAT_Null_Model(y ~ 1)
+  
+  return(list(null_model, sim_params))
+}
+```
+
+```{r main_simulation, message=FALSE, warning=FALSE, eval=FALSE}
+t_0 <- proc.time()
+while (curr_sim <= N_sim) {
+  t_s <- proc.time()
+  print(paste0('Simulation no. ', curr_sim, ' started...'))
+  focal_region <- process_focal_region(vcf_file, regions, N_markers, valid_regions, arch_fun = gen_arch)
+  pheno <- sim_pheno(focal_region)
+  null_model <- pheno[[1]]
+  sim_params <- pheno[[2]]
+  
+  ## Now run SKAT for every region using the simulated phenotype
+  partial_results <- data.frame(region = rep("", times = length(regions)),
+                            p_value = rep(0, times = length(regions)),
+                            is_TP = rep(0, times = length(regions)))
+  skipped <- 0
+  for (j in 1:length(regions)) {
+    region <- regions[j]
+    G <- hush(seqminer::readVCFToMatrixByRange(vcf_file, range = region))[[1]] %>%
+      t() %>%
+      gwasim::impute_G() %>%
+      gwasim::fix_allele_encoding()
+    if (dim(G)[2] != 0) {
+      skat <- SKAT::SKAT_CommonRare(G, obj = null_model)
+      tp_status <- 0
+      if (region == focal_region$region) {
+        tp_status <- 1
+      }
+      new_row <- c(region, skat$p.value, tp_status)
+      partial_results[j, ] <- c(region, skat$p.value, tp_status)
+    } else {
+      skipped <- skipped + 1
+      partial_results[j, ] <- c(NA, NA, NA)
+    }
+  }
+  results[[curr_sim]] <- list(params = sim_params, null_model = null_model, results = partial_results)
+  curr_sim <- curr_sim + 1
+  elapsed_time <- proc.time() - t_0
+  print(elapsed_time)
+}
+```
+
+# Looking at the results
+
+```{r viz_fns}
+plot_result <- function(results, index) {
+  i <- index
+  plot(-log10(results[[i]]$results$p_value), col = results[[i]]$results$is_TP + 1, pch=19, cex = .7, las=1, cex.axis=.7,
+     ylab='', xlab = 'region index', type='n')
+  mtext(expression('-log10(p-value) for the' * phantom(' simulated') * ' and the' * phantom(' focal') * ' region.'), col='black')
+  mtext(expression(phantom('-log10(p-value) for the') * ' simulated' * phantom(' and the focal region.')), col='grey')
+  mtext(expression(phantom('-log10(p-value) for the simulated and the') * ' focal' * phantom(' region.')), col='red')
+  grid()
+  cols <- results[[i]]$results$is_TP
+  cols[cols == 0] <- 'grey'
+  cols[cols == 1] <- 'red'
+  points(-log10(results[[i]]$results$p_value), col = cols, pch=19, cex = .7)
+}
+
+get_ap_counts <- function(results) {
+  fp_counts <- vector(mode = 'integer', length = length(results))
+  for (i in 1:length(results)) {
+    res <- results[[i]]$results
+    ref_p <- na.omit(res[res$is_TP == 1, 'p_value'])
+    tmp <- res[res$is_TP == 0 & !is.na(res$is_TP), ]
+    count_FP <- dim(tmp[tmp$p_value <= ref_p, ])[1]
+    fp_counts[i] <- count_FP
+  }
+  return(fp_counts)
+}
+```
+
+```{r load_cached_result, include=FALSE}
+load('../results_tst2.rdat')
+```
+
+## Plotting i-th result
+```{r plot_result}
+plot_result(results = results, index = 10)
+```
+
+## Plot count of adjunct positives
+```{r ap_counts}
+ap_counts <- get_ap_counts(results)
+hist(ap_counts, las=1, cex.axis=.7, main = "Histogram of AP counts", xlab='', ylab='')
+plot(ap_counts, pch=19, cex.axis=.7, las=1, type='h', xlab="region", ylab = '', main = 'AP counts per region')
+```
+
+```{r dist}
+get_midpoint <- function(region) {
+    midpoint <- str_replace_all(region, "[:,-]", ',') %>% 
+    str_split(',', simplify=T) %>% 
+    as.numeric() %>%
+    (function (x) x[2:3]) %>%
+    mean()
+    return(midpoint)
+}
+
+ap_data <- c()
+for (i in 1:100) {
+    tmp <- results[[i]]$results
+    focal_idx <- which(tmp$is_TP == 1)
+    ap_idx <- which(tmp$p_value <= tmp[focal_idx, 'p_value'])
+    ap_idx <- ap_idx[ap_idx != focal_idx]
+    ap_result <- NA
+    if (length(ap_idx) > 0) {
+       midpoints <- tmp[, 'region'] %>% map(get_midpoint) %>% unlist
+       dists <- abs(midpoints[focal_idx] - midpoints[ap_idx])
+       ap_result <- cbind(dists/1e6, -log10(tmp[ap_idx, 'p_value']))
+       ap_data <- rbind(ap_data, ap_result)
+    }
+}
+
+plot(ap_data, pch=19, cex=.5, las=1, cex.axis=.7, xlab = 'distance to focal region', ylab = '', main = 'APs: log10(p-value) vs. distance to focal (Mbp)')
+```
