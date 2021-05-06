@@ -6,7 +6,6 @@
 #' @param vcf_file path to vcf file containing genotypes
 #' @param force_silent silence seqminer verbosity (may cause some issues on non-*nix machines)
 #' @return a list with genotypes matrix and maf vector
-#' @export
 #'
 sim_y_in_regions <- function(regions, vcf_file, n_markers, get_betas_fun = dbeta,
                              get_betas_args = list(shape1 = .1, shape2 = .1), rare = T,
