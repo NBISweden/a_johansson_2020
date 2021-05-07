@@ -8,7 +8,7 @@
 #' @return a list with genotypes matrix and maf vector
 #' @export
 #'
-read_region_vcf <- function(locus, vcf_file, force_silent = T, GP_map = c(0, 1, 2)) {
+read_region_vcf <- function(locus, vcf_file, force_silent = F, GP_map = c(0, 1, 2)) {
   if (force_silent) {
     region <- hush(seqminer::readVCFToMatrixByRange(vcf_file, range = locus))[[1]]
   } else {

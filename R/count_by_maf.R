@@ -10,7 +10,6 @@
 #' @export
 #'
 count_by_maf <- function(regions, vcf_file, maf_threshold = 0.01) {
-  registerDoFuture()
   y <- foreach(x = regions$region) %dopar% {
     #geno <- seqminer::readVCFToMatrixByRange(vcf_file, range = x)[[1]]
     #n_alleles <- 2 * dim(geno)[2]
