@@ -1,4 +1,14 @@
-fp_CommonRare <- function(focal_region, regions, null_model, vcf_file) {
+#' @title Run SKAT-O CommonRare model on all regions
+#' @author Marcin Kierczak <marcin.kierczak@scilifelab.se>
+#' @description Given a phenotype simulated for a focal region, scan for
+#' associations in all supplied regions.
+#' @param focal_region - name of the focal region
+#' @param regions - list of regions to scan
+#' @param null_model - SKAT null model
+#' @param vcf_file - path to vcf file with genotypes
+#' @return a tibble with association p-value for every region and info whether
+#' the region is the focal region
+scan_CommonRare <- function(focal_region, regions, null_model, vcf_file) {
   regions <- regions$region
   tmp <- foreach(x = regions) %dopar% {
     is_focal <- F
