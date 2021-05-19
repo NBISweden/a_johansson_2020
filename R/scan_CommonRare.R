@@ -18,7 +18,7 @@ scan_CommonRare <- function(focal_region, regions, null_model, vcf_file) {
       is_focal <- T
     }
     gt <- read_region_vcf(x, vcf_file)
-    if (dim(gt$G)[2] > 0) { # some regions are not genotyped and need to be skipped
+    if (!is.null(gt)) { # some regions are not genotyped and need to be skipped
       skat <- SKAT::SKAT_CommonRare(Z = gt$G, obj = null_model)
       tmp <- list(region = x, p_value = skat$p.value, is_focal = is_focal)
     } else {
