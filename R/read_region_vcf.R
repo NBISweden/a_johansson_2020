@@ -26,10 +26,10 @@ read_region_vcf <- function(locus, vcf_file, force_silent = F, GP_map = c(0, 1, 
     if (!('gwasim' %in% class(G)))
       class(G) <- c(class(G), 'gwasim')
 
-    maf <- get_maf(G)
     if (!all(GP_map == c(0,1,2))) {
       G <- recode_G(G = G, GP_map = GP_map)
     }
+    maf <- get_maf(G)
     result = list(G = G, maf = maf)
   }
   return(result)

@@ -14,7 +14,7 @@ get_maf <- function(x) {
     maf <- vcfR::maf(x)[,'Frequency']
   } else {
     #stop('ERROR! Data format not supported. Expecting GenABEL gwaa.data or vcfR.')
-    n_alleles <- 2 * nrows(x)
+    n_alleles <- 2 * nrow(x)
     maf <- colSums(x) / n_alleles # allele count / total number of alleles
   }
   validated <- validate_maf(maf)
