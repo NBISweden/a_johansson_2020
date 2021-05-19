@@ -2,6 +2,7 @@
 #' an object imported using seqminer
 #' @author Marcin Kierczak <marcin.kierczak@scilifelab.se>
 #' @param x a gwaa-data, a vcfR object or a genotype matrix loaded using seqminer
+#' @param ind_names names of individuals to extract
 #' @param marker_names names of markers to extract
 #' @return genotype matrix ind x marker with counts of the reference allele
 #' @details if marker_names is not provided, all markers present in x will be returned

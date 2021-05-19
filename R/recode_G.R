@@ -8,6 +8,7 @@
 #' @param G genotypes matrix
 #' @param GP_map genotype-phenotype map
 #' @return weights matrix
+#' @export
 #'
 recode_G <- function(G, GP_map) {
   if (is.vector(GP_map) & length(GP_map) == 3) {

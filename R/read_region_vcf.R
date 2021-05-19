@@ -5,7 +5,8 @@
 #' @param locus region to extract, e.g. 22:17638600-17641201
 #' @param vcf_file path to vcf file containing genotypes
 #' @param force_silent silence seqminer verbosity (may cause some issues on non-*nix machines)
-#' @return a list with genotypes matrix and maf vector
+#' @param GP_map a genotype-phenotype map, by default AA-0, Aa-1 and aa-2
+#' @return a list with genotypes matrix and maf vector or NULL if region cannot be extracted
 #' @export
 #'
 read_region_vcf <- function(locus, vcf_file, force_silent = F, GP_map = c(0, 1, 2)) {
@@ -14,19 +15,22 @@ read_region_vcf <- function(locus, vcf_file, force_silent = F, GP_map = c(0, 1, 
   } else {
     region <- seqminer::readVCFToMatrixByRange(vcf_file, range = locus)[[1]]
   }
+  result <- NULL
 
-  G <- region %>%
-    t() %>%
-    gwasim::impute_G() %>%
-    gwasim::fix_allele_encoding()
+  if (dim(region)[1] != 0) {
+    G <- region %>%
+      t() %>%
+      impute_G() %>%
+      fix_allele_encoding()
 
-  if (!('gwasim' %in% class(G)))
-    class(G) <- c(class(G), 'gwasim')
+    if (!('gwasim' %in% class(G)))
+      class(G) <- c(class(G), 'gwasim')
 
-  maf <- gwasim::get_maf(G)
-  if (GP_map != c(0,1,2)) {
-    G <- recode_G(G = G, GP_map = GP_map)
+    maf <- get_maf(G)
+    if (!all(GP_map == c(0,1,2))) {
+      G <- recode_G(G = G, GP_map = GP_map)
+    }
+    result = list(G = G, maf = maf)
   }
-  result = list(G = G, maf = maf)
   return(result)
 }

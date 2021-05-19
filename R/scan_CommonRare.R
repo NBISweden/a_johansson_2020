@@ -8,6 +8,8 @@
 #' @param vcf_file - path to vcf file with genotypes
 #' @return a tibble with association p-value for every region and info whether
 #' the region is the focal region
+#' @export
+#'
 scan_CommonRare <- function(focal_region, regions, null_model, vcf_file) {
   regions <- regions$region
   tmp <- foreach(x = regions) %dopar% {

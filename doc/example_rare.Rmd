@@ -43,12 +43,11 @@ library('SKAT')
 library('purrr')
 ```
 ```{r fns, include=FALSE}
-hush <- function(code) {
-  sink("NUL") # use /dev/null in UNIX
-  tmp = code
-  sink()
-  return(tmp)
-}
+
+# remove when moved to gwasim
+source("../R/hush.R")
+source("../R/count_by_maf.R")
+source("../R/read_regions_bed.R")
 
 process_focal_region <- function(vcf_file, regions, N_markers, valid_regions, arch_fun) {
   is_selected <- FALSE
@@ -60,18 +59,7 @@ process_focal_region <- function(vcf_file, regions, N_markers, valid_regions, ar
     locus <- regions[rnd]
 
     # Extract the region
-    focal_region <- hush(seqminer::readVCFToMatrixByRange(vcf_file, range = locus))[[1]]
-    G <- focal_region %>%
-      t() %>%
-      gwasim::impute_G() %>%
-      gwasim::fix_allele_encoding()
-
-    if (!('gwasim' %in% class(G)))
-      class(G) <- c(class(G), 'gwasim')
-
-    maf <- gwasim::get_maf(G)
-    #effects <- gwasim::get_effects(maf=maf, thr=0.01, N=N_markers, get_betas_fun = dbeta,
-    #get_betas_args = list(shape1 = .1, shape2 = .1), rare=T, frac_negative=0, seed = 2)
+    maf <- read_
     effects <- arch_fun(maf = maf, N = N_markers)
 
     # Filter: Check if the selected region contains at least N_markers rare markers
@@ -99,19 +87,12 @@ At this stage, we want to read-in the *gene sets* data from our bed file and tra
 `gwasim` functions:
 
 ```{r read_bed}
-bed_data <- read_delim(bed_file, delim = " ", col_names = c('chr', 'start', 'end', 'feature'))
-# Convert to 1-based coordinates used by the VCF format, filter out unnecessary data
-bed_data %<>%
-  mutate(start = start + 1) %>%
-  select(-feature) %>%
-  filter(chr %in% chr_list)
-bed_data %>% head()
+regions <- read_regions_bed(bed_file = bed_file) %>% filter(chr == 'chr22')
+valid_regions <- count_by_maf(regions = regions, vcf_file = vcf_file, maf_threshold = 0.01) %>% 
+  filter(n_leq >= N_markers) %>% 
+  select(region)
 ```
-We can see that we have a neat tibble that contains the chromosome, the start coordinate and the end coordinate of each region (row). What we need is names in the format used by VCF, i.e. `chr_no:start_coord-end_coord`. Let's generate a vector of regions in this format:
-```{r construct_region_names}
-regions <- paste0(str_remove(bed_data$chr, 'chr'), ':', bed_data$start, '-', bed_data$end)
-regions[1:5]
-```
+
 Everything seems to be fine! We can proceed!
 
 # Simulation 
