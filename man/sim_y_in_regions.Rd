@@ -2,14 +2,14 @@
 % Please edit documentation in R/sim_y_in_regions.R
 \name{sim_y_in_regions}
 \alias{sim_y_in_regions}
-\title{simulate phenotypes in a number of regions}
+\title{Simulate phenotypes in a number of regions}
 \usage{
 sim_y_in_regions(
   regions,
   vcf_file,
   n_markers,
-  get_betas_fun = dbeta,
-  get_betas_args = list(shape1 = 0.1, shape2 = 0.1),
+  get_betas_fun = rnorm_betas,
+  get_betas_args = list(mean = 0, sd = 1),
   rare = T,
   frac_negative = 0,
   thr = 0.01,
@@ -21,39 +21,39 @@ sim_y_in_regions(
 )
 }
 \arguments{
-\item{regions}{list of regions to use}
+\item{regions}{list of regions to use.}
 
-\item{vcf_file}{path to vcf file containing genotypes}
+\item{vcf_file}{character, path to vcf file containing genotypes.}
 
-\item{n_markers}{number of markers to use in the simulation (see get_effects)}
+\item{n_markers}{integer, number of markers to use in the simulation (see [get_effects()]).}
 
-\item{get_betas_fun}{see get_effects}
+\item{get_betas_fun}{see [get_effects()].}
 
-\item{get_betas_args}{see get_effects}
+\item{get_betas_args}{see [get_effects()].}
 
-\item{rare}{see get_effects}
+\item{rare}{see [get_effects()].}
 
-\item{frac_negative}{see get_effects}
+\item{frac_negative}{see [get_effects()].}
 
-\item{thr}{see get_effects}
+\item{thr}{see \link[gwasim]{get_effects}.}
 
-\item{force_silent}{silence seqminer verbosity (may cause some issues on non-*nix machines)}
+\item{force_silent}{logical, if `TRUE` seqminer verbosity will be silenced (may cause some issues on non-*nix machines).}
 
-\item{seed}{see get_effects}
+\item{seed}{see \link{get_effects}.}
 
-\item{e_mean}{mean error}
+\item{e_mean}{numeric, mean error.}
 
-\item{e_sd}{error std. dev.}
+\item{e_sd}{numeric, error std. dev.}
 
-\item{GP_map}{genotype-phenotype map}
+\item{GP_map}{vector of genotype-phenotype map values for `AA`, `aA` and `aa` respectively.}
 }
 \value{
-a list with genotypes matrix and maf vector
+list with genotypes matrix and maf vector
 }
 \description{
 given region coordinates (locus), the function extracts genotypes for all loci in that region,
 constructs genotypes matrix G (applies imputation and fixes allele encoding) and computes maf per marker.
 }
 \author{
-Marcin Kierczak <marcin.kierczak@scilifelab.se>
+Marcin Kierczak \email{marcin.kierczak@scilifelab.se}
 }
