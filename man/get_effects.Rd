@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_effects.R
 \name{get_effects}
 \alias{get_effects}
-\title{Get weights for markers using beta distribution.}
+\title{Get weights for markers using provided distribution function.}
 \usage{
 get_effects(
   maf,
@@ -20,7 +20,8 @@ get_effects(
 
 \item{N}{- number of markers to be assigned an effect}
 
-\item{get_betas_fun}{- name of a function for getting Beta parameters given a vector x of MAFs.}
+\item{get_betas_fun}{- name of a function for getting Beta parameters given a vector x of MAFs. Note, if you want a maf-independent
+function like \link{rnorm}, see \details.}
 
 \item{get_betas_args}{- a list with additional function parameters for the function defined in `get_betas`}
 
@@ -43,5 +44,5 @@ from Beta distribution with given parameters so that the magnitude of the effect
 of the effects will be negative. Monomorphic markers with `maf = 0` will be automatically excluded from sampling!
 }
 \author{
-Marcin Kierczak <marcin.kierczak_NO_SPAM_scilifelab.se>
+Marcin Kierczak \email{marcin.kierczak@scilifelab.se}
 }

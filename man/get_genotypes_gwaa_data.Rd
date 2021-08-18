@@ -4,12 +4,14 @@
 \alias{get_genotypes_gwaa_data}
 \title{Get genotypes matrix (counts of reference allele) from a GenABEL gwaa-data object}
 \usage{
-get_genotypes_gwaa_data(x, marker_names)
+get_genotypes_gwaa_data(x, ind_names = NULL, marker_names = NULL)
 }
 \arguments{
-\item{x}{a vcfR object}
+\item{x}{a gwaa.data object (GenABEL internal format)}
 
-\item{marker_names}{names of markers to extract}
+\item{ind_names}{names of the individuals to extract}
+
+\item{marker_names}{names of the markers to extract}
 }
 \value{
 genotype matrix ind x marker with counts of the reference allele

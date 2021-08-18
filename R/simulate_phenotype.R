@@ -30,7 +30,7 @@ simulate_phenotype <- function(x,
                       perc_negative = perc_negative_rare)
     G_rare <- get_genotypes(x = vcf, marker_names = names(rare$marker_idx)) %>%
       fix_allele_encoding() %>%
-      impute_G(maf = maf)
+      impute_G()
   } else {
     rare <- list(effects = 0)
   }
@@ -42,7 +42,7 @@ simulate_phenotype <- function(x,
                           perc_negative = perc_negative_common)
     G_common <- get_genotypes(x = vcf, marker_names = names(common$marker_idx)) %>%
       fix_allele_encoding() %>%
-      impute_G(maf = maf)
+      impute_G()
 
   } else {
     common <- list(effects = 0)
