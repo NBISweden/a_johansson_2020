@@ -42,6 +42,9 @@ The following input parameters are expected from the user:
 ## Output
 * A text file or a tibble with simulated phenotypes along with the effect of the loci used for simulation.
 
+## Documentation
+* An example of using `gwasim` with a VCF input is [available here](https://nbisweden.github.io/a_johansson_2020/example_simulation_vcf.html)
+
 ## Possible applications:
 1. To validate sensitivity and specificity of various GWA algorithms in the landscape of varying effect sizes, directionalities and mafs. 
   

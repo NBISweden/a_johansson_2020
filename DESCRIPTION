@@ -11,14 +11,16 @@ Description: Package contains functions for simulating
     methods.
 License: GPL-3
 Depends:
+    R (>= 3.5.0),
     tidyverse,
-    magrittr
+    magrittr,
+    reticulate
 Imports:
     SKAT,
     lifecycle,
-    vcfR
 Suggests: 
     GenABEL,
+    vcfR,
     covr,
     testthat,
     devtools
