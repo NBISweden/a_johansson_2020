@@ -14,7 +14,7 @@ count_by_maf <- function(regions, vcf_file, maf_threshold = 0.01) {
     #geno <- seqminer::readVCFToMatrixByRange(vcf_file, range = x)[[1]]
     #n_alleles <- 2 * dim(geno)[2]
     #maf <- pmin(rowSums(geno) / n_alleles, 1 - (rowSums(geno) / n_alleles))
-    tmp <- read_region_vcf(locus = x, vcf_file = vcf_file, force_silent = T)
+    tmp <- read_region_vcf(locus = x, vcf_file = vcf_file, force_silent = F)
     if (!is.null(tmp)) {
       count_gt <- sum(tmp$maf > maf_threshold)
       count_leq <- sum(tmp$maf <= maf_threshold)
