@@ -1,6 +1,6 @@
 #' @title Get minor allele frequency vector
 #' @author Marcin Kierczak <marcin.kierczak@scilifelab.se>
-#' @param x a gwaa-data or a vcfR object
+#' @param x a gwaa-data, a vcfR or a gwasim object
 #' @return vector of minor allele frequencies
 #' @export
 #'

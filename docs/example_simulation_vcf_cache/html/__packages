@@ -1,0 +1,16 @@
+base
+vcfR
+stringr
+tidyverse
+ggplot2
+tibble
+tidyr
+readr
+purrr
+dplyr
+forcats
+magrittr
+gwasim
+MASS
+GenABEL.data
+GenABEL
