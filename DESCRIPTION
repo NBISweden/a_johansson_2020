@@ -15,8 +15,7 @@ Depends:
     magrittr
 Imports:
     SKAT,
-    lifecycle,
-    vcfR
+    lifecycle
 Suggests: 
     GenABEL,
     covr,
