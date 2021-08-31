@@ -17,7 +17,7 @@ Depends:
     reticulate
 Imports:
     SKAT,
-    lifecycle,
+    lifecycle
 Suggests: 
     GenABEL,
     vcfR,
