@@ -6,7 +6,7 @@
 #'
 get_maf <- function(x) {
   n_alleles <- 2 * nrow(x)
-  maf <- colSums(x) / n_alleles # allele count / total number of alleles
+  maf <- colSums(x, na.rm = T) / n_alleles # allele count / total number of alleles
   validated <- validate_maf(maf)
   return(validated$maf)
 }
