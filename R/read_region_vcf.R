@@ -19,6 +19,7 @@ read_region_vcf <- function(locus, vcf_file, force_silent = F, GP_map = c(0, 1, 
 
   if (dim(region)[1] != 0) {
     G <- region %>%
+      replace(. < 0 | . > 2, NA) %>%
       t() %>%
       impute_G() %>%
       fix_allele_encoding()
