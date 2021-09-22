@@ -1,7 +1,7 @@
-# This is the initial test. We want to make sure that gwasim works on Rckham.
+# This is the initial test. We want to make sure that gwasim works on Rackham.
 
 library('stringr')
-library('gwasim')
+if (!require('gwasim')) devtools::install_github('NBISweden/a_johansson_2020'); library(gwasim)
 library('seqminer')
 library('SKAT')
 library('purrr')
