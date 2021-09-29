@@ -38,7 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "rcmdcheck", "reticulate"))
+          install.packages(c("remotes", "rcmdcheck", "seqminer"))
           #install.packages("https://cran.r-project.org/src/contrib/Archive/GenABEL.data/GenABEL.data_1.0.0.tar.gz", type="source", repos=NULL)
           #install.packages("https://cran.r-project.org/src/contrib/Archive/GenABEL/GenABEL_1.8-0.tar.gz", type="source", repos=NULL)
           #source("https://install-github.me/mangothecat/visualTest")
