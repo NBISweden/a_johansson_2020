@@ -14,7 +14,7 @@ Depends:
     R (>= 3.5.0),
     tidyverse,
     magrittr,
-    reticulate
+    seqminer
 Imports:
     SKAT,
     lifecycle
