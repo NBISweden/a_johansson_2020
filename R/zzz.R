@@ -4,6 +4,6 @@ pyvcf <- NULL
 
 .onLoad <- function(libname, pkgname) {
   # use superassignment to update global reference to scipy
-  pandas <<- reticulate::import("pandas", delay_load = TRUE)
-  pyvcf <<- reticulate::import("pyvcf", delay_load = TRUE)
+  # pandas <<- reticulate::import("pandas", delay_load = TRUE)
+  # pyvcf <<- reticulate::import("pyvcf", delay_load = TRUE)
 }

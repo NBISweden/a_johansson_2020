@@ -25,30 +25,30 @@ sim_y_in_regions(
 
 \item{vcf_file}{character, path to vcf file containing genotypes.}
 
-\item{n_markers}{integer, number of markers to use in the simulation (see [get_effects()]).}
+\item{n_markers}{integer, number of markers to use in the simulation (see \link{get_effects}.}
 
-\item{get_betas_fun}{see [get_effects()].}
+\item{get_betas_fun}{see \link{get_effects}.}
 
-\item{get_betas_args}{see [get_effects()].}
+\item{get_betas_args}{see \link{get_effects}.}
 
-\item{rare}{see [get_effects()].}
+\item{rare}{see \link{get_effects}.}
 
-\item{frac_negative}{see [get_effects()].}
+\item{frac_negative}{see \link{get_effects}.}
 
-\item{thr}{see \link[gwasim]{get_effects}.}
+\item{thr}{see \link{get_effects}.}
 
 \item{force_silent}{logical, if `TRUE` seqminer verbosity will be silenced (may cause some issues on non-*nix machines).}
 
 \item{seed}{see \link{get_effects}.}
 
-\item{e_mean}{numeric, mean error.}
+\item{e_mean}{numeric, error distribution mean.}
 
-\item{e_sd}{numeric, error std. dev.}
+\item{e_sd}{numeric, error distribution standard deviation.}
 
 \item{GP_map}{vector of genotype-phenotype map values for `AA`, `aA` and `aa` respectively.}
 }
 \value{
-list with genotypes matrix and maf vector
+list with character region name and a vector of simulated phenotypes.
 }
 \description{
 given region coordinates (locus), the function extracts genotypes for all loci in that region,
