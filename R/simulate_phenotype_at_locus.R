@@ -15,7 +15,7 @@
 simulate_phenotype <- function(x, locus, means = c(1, 2, 3), std_devs = c(1,1,1)) {
     G <- get_genotypes(x = vcf, marker_names = locus) %>%
       fix_allele_encoding() %>%
-      impute_G(maf = maf)
+      impute_G()
 
   y_rare <- G_rare %*% rare$effects
   y_common <- G_common %*% common$effects

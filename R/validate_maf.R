@@ -4,7 +4,7 @@
 #' @return a list with problematic elements, the reason why they
 #' are problematic and fixed maf values (if possible). If no problems,
 #' reason and problems will be NULL.
-#'
+#' @export
 validate_maf <- function(x) {
   problems <- list(reason = NULL, problems = NULL, maf = x)
   if (sum(x > 0.5) != 0) {

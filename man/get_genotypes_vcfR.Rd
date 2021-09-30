@@ -4,12 +4,14 @@
 \alias{get_genotypes_vcfR}
 \title{Get genotypes matrix (counts of reference allele) from a vcfR object}
 \usage{
-get_genotypes_vcfR(x, marker_names)
+get_genotypes_vcfR(x, ind_names = NULL, marker_names = NULL)
 }
 \arguments{
 \item{x}{a vcfR object}
 
-\item{marker_names}{names of markers to extract}
+\item{ind_names}{names of thh individuals to extract}
+
+\item{marker_names}{names of the markers to extract}
 }
 \value{
 genotype matrix ind x marker with counts of the reference allele

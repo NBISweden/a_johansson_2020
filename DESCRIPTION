@@ -4,7 +4,7 @@ Title: Simulates phenotypes with given effects based on provided
     data
 Version: 0.1.0
 Author: Marcin Kierczak
-Maintainer: The package maintainer <yourself@somewhere.net>
+Maintainer: The package maintainer <marcin.kierczak@scilifelab.se>
 Description: Package contains functions for simulating
     phenotypes using provided genotyping data, with desired effect sizes
     and directionalities. Mainly used for benchmarking different GWAS
@@ -17,7 +17,7 @@ Depends:
     reticulate
 Imports:
     SKAT,
-    lifecycle,
+    lifecycle
 Suggests: 
     GenABEL,
     vcfR,
