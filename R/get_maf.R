@@ -5,6 +5,7 @@
 #' @export
 #'
 get_maf <- function(x) {
+  x <- as.matrix(x)
   n_alleles <- 2 * nrow(x)
   maf <- colSums(x, na.rm = T) / n_alleles # allele count / total number of alleles
   validated <- validate_maf(maf)
