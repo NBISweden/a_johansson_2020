@@ -6,7 +6,7 @@
 #'
 get_maf <- function(x) {
   x <- as.matrix(x)
-  if (sum(x > 2) != 0) {
+  if (sum(na.omit(x) > 2) != 0) {
 	stop('Currently only the 0,1,2 GP map is supported!')
   }
   n_alleles <- 2 * nrow(x)
