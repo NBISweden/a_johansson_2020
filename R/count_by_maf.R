@@ -16,8 +16,8 @@ count_by_maf <- function(regions, vcf_file, maf_threshold = 0.01) {
     #maf <- pmin(rowSums(geno) / n_alleles, 1 - (rowSums(geno) / n_alleles))
     tmp <- read_region_vcf(locus = x, vcf_file = vcf_file, force_silent = F)
     if (!is.null(tmp)) {
-      count_gt <- sum(tmp$maf > maf_threshold)
-      count_leq <- sum(tmp$maf <= maf_threshold)
+      count_gt <- sum(tmp$maf > maf_threshold & tmp$maf < 1)
+      count_leq <- sum(tmp$maf <= maf_threshold & tmp$maf > 0)
       n_markers <- length(tmp$maf)
       tmp <- list(region = x, n_loci = n_markers, n_gt = count_gt, n_leq = count_leq)
       tmp

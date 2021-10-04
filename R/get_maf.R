@@ -6,6 +6,9 @@
 #'
 get_maf <- function(x) {
   x <- as.matrix(x)
+  if (sum(x > 2) != 0) {
+	stop('Currently only the 0,1,2 GP map is supported!')
+  }
   n_alleles <- 2 * nrow(x)
   maf <- colSums(x, na.rm = T) / n_alleles # allele count / total number of alleles
   validated <- validate_maf(maf)
