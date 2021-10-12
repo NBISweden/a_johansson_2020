@@ -6,9 +6,11 @@ ENV RENV_VERSION 0.12.0
 ENV GITHUB_PAT=$PAT
 
 RUN apt update -y && apt install -y \
+libpng-dev \
 libssl-dev \
 libxml2-dev \
-nano
+nano \
+zlib1g-dev
 
 RUN mkdir project
 
