@@ -14,13 +14,12 @@ Depends:
     R (>= 3.5.0),
     tidyverse,
     magrittr,
-    reticulate
+    reticulate,
+    seqminer
 Imports:
     SKAT,
     lifecycle
 Suggests: 
-    GenABEL,
-    vcfR,
     covr,
     testthat,
     devtools
