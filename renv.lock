@@ -1199,5 +1199,10 @@
       "Repository": "CRAN",
       "Hash": "c7eef2996ac270a18c2715c997a727c5"
     }
+  },
+  "Python": {
+    "Version": "3.7.12",
+    "Type": "conda",
+    "Name": "./renv/python/condaenvs/renv-python"
   }
 }

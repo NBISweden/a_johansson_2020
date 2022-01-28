@@ -1,0 +1,22 @@
+colors_carto1920 <- function() {
+  colors_carto1920 <- list()
+  colors_carto1920[[1]] <- rgb(247,238,219, maxColorValue = 255)
+  colors_carto1920[[2]] <- rgb(224,230,229, maxColorValue = 255)
+  colors_carto1920[[3]] <- rgb(194,209,206, maxColorValue = 255)
+  colors_carto1920[[4]] <- rgb(173,195,190, maxColorValue = 255)
+  colors_carto1920[[5]] <- rgb(139,175,175, maxColorValue = 255)
+  colors_carto1920[[6]] <- rgb(114,162,162, maxColorValue = 255)
+  colors_carto1920[[7]] <- rgb(088,149,154, maxColorValue = 255)
+  colors_carto1920[[8]] <- rgb(158,181,142, maxColorValue = 255)
+  colors_carto1920[[9]] <- rgb(187,203,159, maxColorValue = 255)
+  colors_carto1920[[10]] <- rgb(228,220,167, maxColorValue = 255)
+  colors_carto1920[[11]] <- rgb(214,196,166, maxColorValue = 255)
+  colors_carto1920[[12]] <- rgb(190,161,142, maxColorValue = 255)
+  colors_carto1920[[13]] <- rgb(181,132,113, maxColorValue = 255)
+  colors_carto1920[[14]] <- rgb(176,106,100, maxColorValue = 255)
+  colors_carto1920 <- unlist(colors_carto1920)
+}
+
+# carto1920 <- colors_carto1920()
+# par(bg = carto1920[1])
+# hist(rnorm(n = 100, mean = 0, sd = 1), col = carto1920[2:length(carto1920)])
