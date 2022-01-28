@@ -1,5 +1,5 @@
 # a_johansson_2020
-AJ partner project 2020
+AJ partner project 2020-2022
 
 <!-- badges: start -->
 [![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
@@ -9,7 +9,7 @@ AJ partner project 2020
 <!-- badges: end -->
 
 ## Objectives
-To develop an R package for testing the scope of applicability of different GWA methodologies, esp. with respect to varying:
+To develop a set of tools and a pipeline to, given whole-genome or genotyping data for a large cohort, simulate phenotypes :
 * threshold between rare and common variants,
 * the degree of contribution (effect size and direction) contributed by rare and common variants,
 * degree of population structure,
