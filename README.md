@@ -9,41 +9,34 @@ AJ partner project 2020-2022
 <!-- badges: end -->
 
 ## Objectives
-To develop a set of tools and a pipeline to, given whole-genome or genotyping data for a large cohort, simulate phenotypes :
+To develop a set of simulation tools and a pipeline to, given whole-genome or genotyping data for a large cohort, simulate phenotypes according to a genetic architecture with specified parameters:
 * threshold between rare and common variants,
-* the degree of contribution (effect size and direction) contributed by rare and common variants,
+* the degree of contribution (effect size and direction) contributed by rare and by the common variants,
 * degree of population structure,
-* varying amount of contributing loci.
+* varying number of contributing loci with common and rare variants.
 
-## Using on Bianca
-To use the package on Bianca:
-* the `gwasim` package is automatically built into a docker container upon every push,
-* container is called gwasim-latest and is stored in `quiestrho` account on DockerHub,
-* ssh to Rackham, do `singularity pull --docker-login docker://quiestrho/gwasim:latest`
-* transfer the `gwasim_latest.sif` file into Bianca's wharf via sftp,
-* move the file from wharf to your project library,
-* `singularity exec gwasim_latest.sif R --vanilla < script.r` to run an R script within the container 
+## Requirements
+* snakemake (>= 6.9.1),
+* singularity (>= 3.8.5-2.el7),
+* R (>= 3.6.0)
 
 ## Input
-The following input parameters are expected from the user:
-* a VCF file with variants coming from a population under studies,
-* a bed file containing a list of functional regions (e.g. gene list) along with their coordinates,
-* a minor allele frequency threshold for cut-off between rare and common variants,
-* the number of rare and common variants that contribute,
-* distribution of effect sizes as a function of allele frequency (separately for the rare and the common alleles),
-* percentage of alleles with negative effect (for both the common and the rare variants),
-* parameters (mean, standard deviation) of the error term,
-* type of the trait (continuous or binary, a cut-off value for the binary trait),
+The following input is expected:
+* parameters that describe genetic architecture one wants to simulate (population size, common/rare maf threshold, distribution parameters for effect sizes, number of contributing loci),
+* a bed file that specifies genomic regions to be used in simulations, e.g., CDS regions,
+* a file containing a list of individuals to be kept in the dataset (in PLINK2 format),
+* a trio of files (bed, bim, fam) that contains genotyping/sequencing data in PLINK format.
 
-## To add in future:
-* kinship matrix for the studied population,
-* fixed effects
+## Stage 1 - selection of parameters
+At this stage, one can use our interactive tool, Phemulator to select the most appropriate/interesting paramaters for the simulation stage.
+Phemulator can be accessed via a web browser and is available at [https://wwlc3x-marcin0kierczak.shinyapps.io/pheno_sim2/](https://wwlc3x-marcin0kierczak.shinyapps.io/pheno_sim2/). 
 
-## Output
-* A text file or a tibble with simulated phenotypes along with the effect of the loci used for simulation.
+## Stage 2 - prepare genomic data for the simulation
+At this stage, the genomic data are filtered, pre-processed and prepared for being used at the later stages of the simulation.
 
-## Documentation
-* An example of using `gwasim` with a VCF input is [available here](https://nbisweden.github.io/a_johansson_2020/example_simulation_vcf.html)
+## Stage 3 - simulation
+This stage is the actual simulation where the data prepared at stage 1
+
 
 ## Possible applications:
 1. To validate sensitivity and specificity of various GWA algorithms in the landscape of varying effect sizes, directionalities and mafs. 
