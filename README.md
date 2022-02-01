@@ -31,6 +31,8 @@ The following input is expected:
 At this stage, one can use our interactive tool, Phemulator to select the most appropriate/interesting paramaters for the simulation stage.
 Phemulator can be accessed via a web browser and is available at [https://wwlc3x-marcin0kierczak.shinyapps.io/pheno_sim2/](https://wwlc3x-marcin0kierczak.shinyapps.io/pheno_sim2/). 
 
+![](assets/phemulator.png?raw=true)
+
 ## Stage 2 - prepare genomic data for the simulation
 At this stage, the genomic data are filtered, pre-processed and prepared for being used at the later stages of the simulation.
 
