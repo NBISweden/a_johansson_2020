@@ -40,6 +40,62 @@ At this stage, the genomic data are filtered, pre-processed and prepared for bei
 
 ## Stage 3 - simulate phenotypes
 This stage is the actual simulation where the data prepared at stage 2, together with parameters selected at stage 1 are used to simulate phenotypes.
+```
+Usage: R/optparse_test.R [options]
+
+
+Options:
+        --chr-name=CHR-NAME
+                name of the chromosome top process, e.g. chr22
+
+        --data-path=DATA-PATH
+                path to data files
+
+        --regions-bed=REGIONS-BED
+                bed file defining functional regions of interest, eg. CDS
+
+        --afreq=AFREQ
+                an afreq file with allele frequencies computed by Plink2
+
+        --fam=FAM
+                fam file
+
+        --bim=BIM
+                bim file
+
+        --plink-prefix=PLINK-PREFIX
+                prefix (no extension) of the plink2 data files
+
+        --min-maf=MIN-MAF
+                minimal maf to consider (used to remove ultra-rare/fixed markers)
+
+        --rare-maf=RARE-MAF
+                markers above this threshold will be considered common
+
+        --num-mrk=NUM-MRK
+                number of markers per region to be used for simulating phenotype
+
+        --num-mrk-neg=NUM-MRK-NEG
+                per region number of markers with negative effect
+
+        --mean-eff=MEAN-EFF
+                mean effect of a rare allele
+
+        --sd-eff=SD-EFF
+                std. dev. for the distribution of rare allele effects
+
+        --mean-err=MEAN-ERR
+                mean error (residuals)
+
+        --sd-err=SD-ERR
+                std. dev. for the distribution errors (residuals)
+
+        --num-sim=NUM-SIM
+                number of simulations to run (regions to use)
+
+        -h, --help
+                Show this help message and exit
+```
 
 ## Stage 4 - perform SVA and gene-based test using SAIGE 
 This is probably the most exciting stage, where the phenotypes simulated at stage 3 are used to test the behavior of standard single-variant association as well as gene-based tests.
