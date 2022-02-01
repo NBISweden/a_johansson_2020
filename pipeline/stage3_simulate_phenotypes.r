@@ -14,8 +14,8 @@ option_list = list(
               help="an afreq file with allele frequencies computed by Plink2"),
   make_option(c("--fam"), type="character", default="sntst_GRCh38_norel_rnd10000_chr22.fam",
               help="fam file"),
-  make_option(c("--bim"), type="character", default="sntst_GRCh38_norel_rnd10000_chr22.bim",
-              help="bim file"),
+#  make_option(c("--bim"), type="character", default="sntst_GRCh38_norel_rnd10000_chr22.bim",
+#              help="bim file"),
   make_option(c("--plink-prefix"), type="character", default="sntst_GRCh38_norel_rnd10000_chr22",
               help="prefix (no extension) of the plink2 data files"),
   make_option(c("--min-maf"), type="numeric", default = 0.005,
@@ -46,7 +46,7 @@ path <- opt$`data-path`  # path to where the raw data files live
 regions_file <- paste0(path, opt$`regions-bed`)
 afreq_file <- paste0(path, opt$`afreq`)
 fam_file <- paste0(path, opt$`fam`)
-bim_file <- paste0(path, opt$`bim`)
+# bim_file <- paste0(path, opt$`bim`)
 plink_file <- paste0(path, opt$`plink-prefix`)
 
 threshold_low <- opt$`min-maf`   # maf has to be above this threshold

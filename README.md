@@ -60,9 +60,6 @@ Options:
         --fam=FAM
                 fam file
 
-        --bim=BIM
-                bim file
-
         --plink-prefix=PLINK-PREFIX
                 prefix (no extension) of the plink2 data files
 
