@@ -1,25 +1,65 @@
 library(tidyverse)
 library(seqminer)
 
-my_chr <- 'chr22' # chromosome to run simulations on
-path <- "/home/marcin/ExomeSeq2ndRel/marcin/"  # path to where the raw data files live
-regions_file <- paste0(path, "GRCh38_chr22_cds.bed")
-afreq_file <- paste0(path, "sntst_GRCh38_norel_rnd10000_chr22.afreq")
-fam_file <- paste0(path, "sntst_GRCh38_norel_rnd10000_chr22.fam")
-bim_file <- paste0(path, "sntst_GRCh38_norel_rnd10000_chr22.bim")
-plink_file <- paste0(path, "sntst_GRCh38_norel_rnd10000_chr22")
+library("optparse")
 
-threshold_low <- 0.05   # maf has to be above this threshold
-threshold_upp <- 0.5    # maf has to be equal to or below this threshold
+option_list = list(
+  make_option(c("--chr-name"), type="character", default="chr22",
+              help="name of the chromosome top process, e.g. chr22"),
+  make_option(c("--data-path"), type="character", default="/home/marcin/ExomeSeq2ndRel/marcin/",
+              help="path to data files"),
+  make_option(c("--regions-bed"), type="character", default="GRCh38_chr22_cds.bed",
+              help="bed file defining functional regions of interest, eg. CDS"),
+  make_option(c("--afreq"), type="character", default="sntst_GRCh38_norel_rnd10000_chr22.afreq",
+              help="an afreq file with allele frequencies computed by Plink2"),
+  make_option(c("--fam"), type="character", default="sntst_GRCh38_norel_rnd10000_chr22.fam",
+              help="fam file"),
+  make_option(c("--bim"), type="character", default="sntst_GRCh38_norel_rnd10000_chr22.bim",
+              help="bim file"),
+  make_option(c("--plink-prefix"), type="character", default="sntst_GRCh38_norel_rnd10000_chr22",
+              help="prefix (no extension) of the plink2 data files"),
+  make_option(c("--min-maf"), type="numeric", default = 0.005,
+              help = "minimal maf to consider (used to remove ultra-rare/fixed markers)"),
+  make_option(c("--rare-maf"), type="numeric", default = 0.01,
+              help = "markers above this threshold will be considered common"),
+  make_option(c("--num-mrk"), type="numeric", default = 5,
+              help = "number of markers per region to be used for simulating phenotype"),
+  make_option(c("--num-mrk-neg"), type="numeric", default = 0,
+              help = "per region number of markers with negative effect"),
+  make_option(c("--mean-eff"), type="numeric", default = 1,
+              help = "mean effect of a rare allele"),
+  make_option(c("--sd-eff"), type="numeric", default = 0.01,
+              help = "std. dev. for the distribution of rare allele effects"),
+  make_option(c("--mean-err"), type="numeric", default = 0,
+              help = "mean error (residuals)"),
+  make_option(c("--sd-err"), type="numeric", default = 0.05,
+              help = "std. dev. for the distribution errors (residuals)"),
+  make_option(c("--num-sim"), type="numeric", default = 10,
+              help = "number of simulations to run (regions to use)")
+);
+
+opt_parser = OptionParser(option_list=option_list)
+opt = parse_args(opt_parser)
+
+my_chr <- opt$`my-chr` # chromosome to run simulations on
+path <- opt$`data-path`  # path to where the raw data files live
+regions_file <- paste0(path, opt$`regions-bed`)
+afreq_file <- paste0(path, opt$`afreq`)
+fam_file <- paste0(path, opt$`fam`)
+bim_file <- paste0(path, opt$`bim`)
+plink_file <- paste0(path, opt$`plink-prefix`)
+
+threshold_low <- opt$`min-maf`   # maf has to be above this threshold
+threshold_upp <- opt$`rare-maf`  # maf has to be equal to or below this threshold
 
 # Simulation parameters
-N <- 1              # number of markers to be used per simulation
-N_neg <- 0          # number of markers with negative effect size
-eff_mu <- 1         # mean for effects distribution (effect sizes will be sampled from N(eff_mu, eff_sd))
-eff_sd <- 0.01      # std. dev. for phenotype distribution
-e_mu <- 0           # mean for residuals distribution
-e_sd <- 0.05        # std. dev. for residuals distribution
-N_sim <- 10         # number of traits to simulate
+N <- opt$`num-mrk`              # number of markers to be used per simulation
+N_neg <- opt$`num-mrk-neg`      # number of markers with negative effect size
+eff_mu <- opt$`mean-eff`        # mean for effects distribution (effect sizes will be sampled from N(eff_mu, eff_sd))
+eff_sd <- opt$`sd-eff`          # std. dev. for phenotype distribution
+e_mu <- opt$`mean-err`          # mean for residuals distribution
+e_sd <- opt$`sd-err`            # std. dev. for residuals distribution
+N_sim <- opt$`num-sim`          # number of traits to simulate
 
 # Read regions specification, every region (randomly selected) can than be used for a separate simulation
 # Make sure regions that are present multiple times are collapsed to one that stretches from min to max coord
