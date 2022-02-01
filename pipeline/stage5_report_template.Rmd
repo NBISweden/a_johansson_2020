@@ -1,0 +1,84 @@
+---
+title: "Report from Phemulator Simulations"
+author: "Phemulator by Marcin Kierczak"
+date: !r lubridate::today()
+params:
+  title: "Title"
+  path: ""
+  meta: ""
+  sim: ""
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(pander)
+title = params$title
+path <- params$path
+sim_meta <- read_table(paste0(path, params$meta))
+sim_phenos <- read_table(paste0(path, params$sim))
+```
+## Plot phenotypes
+
+```{r echo=FALSE, warning=FALSE, results='asis'}
+for (i in c(1:10)) {
+  trait <- sym(paste0("y", i))
+  phe <- ggplot(sim_phenos, mapping = aes(x = !!trait)) +    geom_histogram(bins=50) + theme_bw()
+  
+  gwa_result <- read.table(paste0(path, "/trait_", trait, ".SAIGE.bgen.txt"), sep = " ", header = T) %>%
+    as_tibble() %>% 
+  mutate(log_pval = -log10(p.value)) %>%
+  select(-p.value)
+  snp_idx <- grep('snp', colnames(sim_meta))
+  meta <- sim_meta[i,]
+  snps <- meta[snp_idx]
+  region_coords <- meta$region %>% str_split(pattern = "-") %>% `[[`(1) %>% as.numeric()
+  region_coords <- data.frame(x = region_coords[1], y = region_coords[2])
+  gwa_result <- gwa_result %>% mutate(is_focal = ifelse(POS %in% snps, T, F))
+  gwa <- ggplot(gwa_result, mapping = aes(x = POS, y = log_pval)) +
+    geom_rect(data=region_coords, 
+              inherit.aes = FALSE,
+              aes(xmin=x, xmax=y, ymin=-Inf, ymax=+Inf), 
+              fill='blue', alpha=0.7) +
+    geom_point() +
+    geom_point(data = gwa_result %>% filter(is_focal), mapping = aes(x = POS, y = log_pval), color='red') + 
+    theme_bw()
+  
+  meta_region <- meta %>% 
+    select(region, gene, num_valid_mrk) %>%
+    mutate_all(as.character) %>% 
+    pivot_longer(cols = everything())
+  meta_snps <- meta %>% 
+    # mutate(across(.cols = contains('maf'), ~.x / 2)) %>% #### !!!!!!!
+    select(-region, -gene, -num_valid_mrk) %>%
+    mutate(across(where(is.numeric), round, 3)) %>%
+    mutate_all(as.character) %>%
+    pivot_longer(cols = everything()) %>% 
+    separate(col = name, into = c('quant', 'val'),  sep = "_") %>%
+    pivot_wider(id_cols = val, names_from = quant) %>% 
+    mutate(pos = as.numeric(snp), snp = val) %>% 
+    select(snp, pos, maf, eff)
+  knitr::asis_output(cat(paste0("### Trait ", trait)))
+  print(phe)
+  print(knitr::kable(meta_region))
+  #print(knitr::kable(meta_snps))
+  gwa_summary <- gwa_result %>% 
+    #filter(is_focal) %>%
+    mutate(maf = 1 - AF_Allele2) %>%
+    select(-Tstat, -varTstar, -is_focal, -imputationInfo, -AF_Allele2, -SNPID) %>%
+    mutate(across(where(is.numeric), round, 3)) %>% 
+    rename(pos = POS)
+  result <- inner_join(x = meta_snps, y = gwa_summary, by = 'pos') %>% 
+    select(CHR, pos, maf.x, maf.y, eff, BETA, everything()) %>% 
+    select(-snp, -SE, -varT) %>% 
+    rename(A2_cnt = AC_Allele2, A1 = Allele1, A2 = Allele2, maf=maf.x, MAF=maf.y)
+  print(knitr::kable(result))
+  print(gwa)
+}
+```
