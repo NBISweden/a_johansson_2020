@@ -27,7 +27,7 @@ The following input is expected:
 * a file containing a list of individuals to be kept in the dataset (in PLINK2 format),
 * a trio of files (bed, bim, fam) that contains genotyping/sequencing data in PLINK format.
 
-## Stage 1 - select simulation parameters
+## Stage 1 - Phemulator: select simulation parameters using interactive tool
 At this stage, one can use our interactive tool, Phemulator to select the most appropriate/interesting paramaters for the simulation stage.
 Phemulator can be accessed via a web browser and is available at [https://wwlc3x-marcin0kierczak.shinyapps.io/pheno_sim2/](https://wwlc3x-marcin0kierczak.shinyapps.io/pheno_sim2/). 
 
