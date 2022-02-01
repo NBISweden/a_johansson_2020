@@ -34,6 +34,8 @@ Phemulator can be accessed via a web browser and is available at [https://wwlc3x
 ## Stage 2 - prepare genomic data for the simulation
 At this stage, the genomic data are filtered, pre-processed and prepared for being used at the later stages of the simulation.
 
+![](assets/a_johanssonPP_stage2.drawio.png?raw=true)
+
 ## Stage 3 - simulate phenotypes
 This stage is the actual simulation where the data prepared at stage 2, together with parameters selected at stage 1 are used to simulate phenotypes.
 
