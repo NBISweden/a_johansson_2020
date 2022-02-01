@@ -101,5 +101,4 @@ This is probably the most exciting stage, where the phenotypes simulated at stag
 
 ## Possible applications:
 1. To validate sensitivity and specificity of various GWA algorithms in the landscape of varying effect sizes, directionalities and mafs. 
-  
-![](assets/Simulations_diagram.png?raw=true)
+
