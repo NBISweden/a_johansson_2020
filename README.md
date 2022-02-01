@@ -99,6 +99,12 @@ Options:
 ## Stage 4 - perform SVA and gene-based test using SAIGE 
 This is probably the most exciting stage, where the phenotypes simulated at stage 3 are used to test the behavior of standard single-variant association as well as gene-based tests.
 
+## Stage 5 - visualize the results
+```
+R -e "rmarkdown::render('script.Rmd',output_file='output.html')"
+```
+
+
 ## Possible applications:
 1. To validate sensitivity and specificity of various GWA algorithms in the landscape of varying effect sizes, directionalities and mafs. 
 
