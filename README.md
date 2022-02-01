@@ -94,6 +94,8 @@ Options:
                 Show this help message and exit
 ```
 
+![](assets/a_johanssonPP_stage3.drawio.png?raw=true)
+
 ## Stage 4 - perform SVA and gene-based test using SAIGE 
 This is probably the most exciting stage, where the phenotypes simulated at stage 3 are used to test the behavior of standard single-variant association as well as gene-based tests.
 
