@@ -125,6 +125,7 @@ rule filter_samples_and_multiallelic:
                         --geno {params.call_rate} \
                         --threads {threads} \
                         --allow-extra-chr \
+                        --maj-ref 'force' \
                         --make-bed \
                         --out {params.output}
                 """
