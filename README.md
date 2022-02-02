@@ -41,9 +41,6 @@ At this stage, the genomic data are filtered, pre-processed and prepared for bei
 ## Stage 3 - simulate phenotypes
 This stage is the actual simulation where the data prepared at stage 2, together with parameters selected at stage 1 are used to simulate phenotypes.
 ```
-Usage: R/optparse_test.R [options]
-
-
 Options:
         --chr-name=CHR-NAME
                 name of the chromosome top process, e.g. chr22
