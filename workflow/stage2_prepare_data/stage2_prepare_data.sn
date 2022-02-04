@@ -93,6 +93,7 @@ rule convert_to_bgen:
                         --psam {input.fam} \
                         --allow-extra-chr \
                         --threads {threads} \
+			--maj-ref 'force' \
                         --export {params.format} \
                         --out {params.output}
                 """
