@@ -38,7 +38,9 @@ option_list = list(
   make_option(c("--sd-err"), type="numeric", default = 0.05,
               help = "std. dev. for the distribution errors (residuals)"),
   make_option(c("--num-sim"), type="numeric", default = 10,
-              help = "number of simulations to run (regions to use)")
+              help = "number of simulations to run (regions to use)"),
+  make_option(c("--output-path"), type="character", default="./",
+	      help = "specification of the output path")
 );
 
 opt_parser = OptionParser(option_list=option_list)
@@ -146,5 +148,5 @@ phenomatrix[,1] <- fam_data$IID
 
 
 # Write the results
-write.table(metadata, file='simulated_metadata.txt', quote=F, row.names=F)
-write.table(phenomatrix, file='simulated_phenotypes.txt', quote=F, row.names=F)
+write.table(metadata, file=paste0(opt$`output-path`,'simulated_metadata.txt'), quote=F, row.names=F)
+write.table(phenomatrix, file=paste0(opt$`output-path`, 'simulated_phenotypes.txt'), quote=F, row.names=F)
