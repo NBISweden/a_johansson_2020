@@ -1,6 +1,7 @@
 library(tidyverse)
 library(seqminer)
 library("optparse")
+source('fns/fix_encoding.R')
 source('fns/impute.R')
 source('fns/read_afreq.R')
 source('fns/read_regions.R')
@@ -88,7 +89,7 @@ valid_scan_data <- scan_regions(regions = cds_uniq, freqs = afreq, min_nmrk = N)
 ############################## Simulate phenotypes
 sim_i <- 1
 sim_regions <- valid_scan_data[sample(1:nrow(valid_scan_data), size = N_sim, replace = T),]
-tbl_colnames <- c('region', 'gene', 'num_valid_mrk', paste0('snp_', 1:N), paste0('eff_', 1:N), paste0('maf_',1:N))
+tbl_colnames <- c('region', 'gene', 'num_valid_mrk', paste0('snp_', 1:N), paste0('ref',1:N), paste0('alt',1:N), paste0('eff_', 1:N), paste0('maf_',1:N))
 metadata <- tbl_colnames %>% purrr::map_dfc(setNames, object = list(character()))
 phenomatrix <- matrix(NA, nrow = length(fam_data$IID), ncol = N_sim + 1)
 
@@ -105,12 +106,17 @@ for (i in 1:nrow(sim_regions)) {
 
   # Randomly select the loci to use
   selected_loci <- sample(valid_snps$pos, size = N, replace = F)
+  selected_snps <- valid_snps %>% filter(pos %in% selected_loci) %>%
+    arrange(match(pos, selected_loci))
   metadata[sim_i, 4:(3+N)] <- as.list(selected_loci)
+  metadata[sim_i, (4+N):(3+N+N)] <- as.list(selected_snps$ref)
+  metadata[sim_i, (4+N+N):(3+N+N+N)] <- as.list(selected_snps$alt)
   to_extract <- afreq[which(afreq$pos %in% as.numeric(selected_loci)), 'index'] %>% unlist()
   G <- seqminer::readPlinkToMatrixByIndex(plink_file, sampleIndex=seq(1:no_samples), markerIndex=to_extract)
 
   # Impute and fix encoding
   G <- array_branch(G, margin = 2) %>%
+    # map(., fix_encoding) %>%
     map(., impute) %>%
     unlist(.) %>%
     matrix(., nrow = dim(G)[1])
@@ -119,7 +125,7 @@ for (i in 1:nrow(sim_regions)) {
   # G[G == 1] <- 2
   # to say othat ne allele is enough (dominance model)
   maf <- colSums(G)/(2*dim(G)[1])
-  metadata[sim_i, (4+N+N):(3+N+N+N)] <- as.list(as.character(maf))
+  metadata[sim_i, (4+N+N+N):(3+N+N+N+N)] <- as.list(as.character(maf))
 
   # Randomly assign effect signs to loci
   eff_signs <- rep(1, times = N)
@@ -130,7 +136,7 @@ for (i in 1:nrow(sim_regions)) {
   # Draw effects from a given distribution
   eff <- abs(rnorm(n = N, mean = eff_mu, sd = eff_sd))
   betas <- eff * eff_signs
-  metadata[sim_i, (4+N):(3+N+N)] <- as.list(as.character(betas))
+  metadata[sim_i, (4+N+N+N+N):(3+N+N+N+N+N)] <- as.list(as.character(betas))
 
   # Add error term
   e <- rnorm(n = dim(G)[1], mean = e_mu, sd = e_sd)
