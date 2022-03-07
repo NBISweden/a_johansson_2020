@@ -60,7 +60,10 @@ rule run_SVA:
                 	--numLinesOutput=2 \
                 	--LOCO=FALSE \
                 	--IsOutputAFinCaseCtrl=TRUE \
-                	--IsDropMissingDosages=TRUE
+                	--IsDropMissingDosages=TRUE \
+	                --weights.beta.rare=1,1 \
+	                --weights.beta.common=1,1 \
+        	        --kernel="linear"
 		"""
 
 rule fit_null_model:
