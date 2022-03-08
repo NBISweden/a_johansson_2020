@@ -1,6 +1,7 @@
 library(tidyverse)
 library(seqminer)
 library("optparse")
+source('fns/gp_remap.R')
 source('fns/fix_encoding.R')
 source('fns/impute.R')
 source('fns/read_afreq.R')
@@ -121,9 +122,9 @@ for (i in 1:nrow(sim_regions)) {
     unlist(.) %>%
     matrix(., nrow = dim(G)[1])
 
-  # If needed, remap G to get a desired genotype-phenotype map, e.g.:
-  # G[G == 1] <- 2
-  # to say othat ne allele is enough (dominance model)
+  # Re-map genotype-phenotype
+  G <- gp_remap(G, map=c(0, 1, 2))
+
   maf <- colSums(G)/(2*dim(G)[1])
   metadata[sim_i, (4+N+N+N):(3+N+N+N+N)] <- as.list(as.character(maf))
 
