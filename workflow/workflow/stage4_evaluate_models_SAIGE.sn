@@ -15,7 +15,7 @@ def getTraits(filename):
 DATA_PATH = "/proj/sens2017538/nobackup/ExomeSeq2ndRel/marcin/"
 DATA_PLINK = DATA_PATH + "sntst_GRCh38_norel_rnd1000_chr22"
 BIN_PATH = DATA_PATH + "experiments/saige_tests/extdata3/"
-PHENO_DATA = DATA_PATH + "experiments/5rare_0neg/simulated_phenotypes.txt"
+PHENO_DATA = DATA_PATH + "experiments/workflow/results/simulated_phenotypes.txt"
 CONTAINER = DATA_PATH + "experiments/saige_tests/saige_1.0.4.sif"
 OUTPUT_PATH = DATA_PATH + "experiments/saige_tests/output/"
 NUM_RND_MRK = "3000"
@@ -24,7 +24,7 @@ REL_CUTOFF = "0.125"
 TRAITS = getTraits(PHENO_DATA)
 IID = TRAITS[0]
 TRAITS.pop(0)
-TRAITS = ['y1']
+#TRAITS = ['y1']
 ####################################################################################################
 
 # Targets
@@ -101,7 +101,7 @@ rule fit_null_model:
                 --sparseGRMFile={input.grm} \
                 --sparseGRMSampleIDFile={input.grm_sample}
                 """
-                
+
 rule run_gene_based:
         input:
                 varRatioFile =  rules.fit_null_model.output.var_ratio_file,
@@ -115,7 +115,7 @@ rule run_gene_based:
                 bin_path = BIN_PATH,
                 bgen_file = DATA_PLINK + ".bgen",
                 bgen_file_idx = DATA_PLINK + ".bgen.bgi",
-                sample_file = DATA_PLINK + ".sample.old",
+                sample_file = DATA_PLINK + ".sample.ok",
                 max_maf_per_grp = "0.0001,0.001,0.01",
                 grp_file = "./output/region.txt",
                 grp_test_cat = "lof",
@@ -154,7 +154,7 @@ rule run_SVA:
                 bin_path = BIN_PATH,
                 bgen_file = DATA_PLINK + ".bgen",
                 bgen_file_idx = DATA_PLINK + ".bgen.bgi",
-                sample_file = DATA_PLINK + ".sample.old",
+                sample_file = DATA_PLINK + ".sample.ok",
                 min_maf = 0.0001,
                 min_mac = 1,
                 LOCO = "FALSE",
@@ -174,4 +174,3 @@ rule run_SVA:
                 --sparseGRMFile={input.grm} \
                 --sparseGRMSampleIDFile={input.grm_sample} \
                """
-                
