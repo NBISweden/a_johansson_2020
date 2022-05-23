@@ -1,0 +1,59 @@
+# -*- snakemake -*-
+import os.path
+import subprocess
+from multiprocessing import cpu_count
+
+DATA_DIR = "/home/marcin/ExomeSeq2ndRel/marcin/"
+
+## Targets
+# Code collecting output files from this part of the pipeline
+all_outputs.append(expand("{ref_path}{file}", 
+    ref_path = OUTPUT_PATH, 
+    file = ["simulated_metadata.txt", "simulated_phenotypes.txt"]))
+
+rule simulate_phenotypes:
+	input:
+		regions_bed = DATA_DIR + OUTPUT_PREFIX + ".bed",
+		afreq = DATA_DIR + OUTPUT_PREFIX + ".afreq",
+		fam = DATA_DIR + OUTPUT_PREFIX + ".fam"		
+	output:
+		simulated_phenos = OUTPUT_PATH + "simulated_phenotypes.txt",
+		simulated_metadata = OUTPUT_PATH + "simulated_metadata.txt",
+	params:
+		chr_name = "chr" + CHR,
+		data_path = DATA_DIR,
+		plink_prefix = OUTPUT_PREFIX,
+		min_maf = config['min_maf'],
+		rare_maf = config['rare_maf'],
+		num_mrk = config['num_mrk'],
+		num_mrk_neg = config['num_mrk_neg'],
+		mean_eff = config['mean_eff'],
+		sd_eff = config['sd_eff'],
+		mean_err = config['mean_err'],
+		sd_err = config['sd_err'],
+		num_sim = config['num_sim'],
+		output_path = OUTPUT_PATH,
+	threads: 4
+	envmodules:
+		"R",
+		"R_packages"
+	shell:
+		"""
+		Rscript utils/stage3_simulate_phenotypes.r \
+			--chr-name {params.chr_name} \
+			--data-path {params.data_path} \
+			--regions-bed {input.regions_bed} \
+			--afreq {input.afreq} \
+			--fam {input.fam} \
+			--plink-prefix {params.plink_prefix} \
+			--min-maf {params.min_maf} \
+			--rare-maf {params.rare_maf} \
+			--num-mrk {params.num_mrk} \
+			--num-mrg-neg {params.num_mrk_neg} \
+			--mean-eff {params.mean_eff} \
+			--sd-eff {params.sd_eff} \
+			--mean-err {params.mean_err} \
+			--sd-err {params.sd_err} \
+			--num-sim {params.num_sim} \
+			--output-path {params.output_path}
+		"""

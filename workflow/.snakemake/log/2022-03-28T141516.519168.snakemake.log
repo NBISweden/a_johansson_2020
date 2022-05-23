@@ -1,0 +1,3 @@
+SyntaxError in line 17 of /Users/kiero/Dropbox/WABI/Projects/Johansson_PP/a_johansson_2020/workflow/workflow/stage3_simulate_phenotypes.sn:
+Unexpected keyword afreq in rule definition (stage3_simulate_phenotypes.sn, line 17)
+  File "/Users/kiero/Dropbox/WABI/Projects/Johansson_PP/a_johansson_2020/workflow/Snakefile", line 29, in <module>

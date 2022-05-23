@@ -1,0 +1,6 @@
+Building DAG of jobs...
+MissingInputException in line 132 of /Users/kiero/Dropbox/WABI/Projects/Johansson_PP/a_johansson_2020/workflow/workflow/stage2_prepare_data.sn:
+Missing input files for rule process_ids_file:
+    output: /proj/sens2017538/nobackup/ExomeSeq2ndRel/marcin/ids_to_keep.txt.processed
+    affected files:
+        /proj/sens2017538/nobackup/ExomeSeq2ndRel/marcin/ids_to_keep.txt

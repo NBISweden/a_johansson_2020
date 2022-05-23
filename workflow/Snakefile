@@ -1,0 +1,36 @@
+from snakemake.exceptions import WorkflowError
+from snakemake.utils import min_version
+from snakemake.utils import validate
+import os
+import os.path
+import subprocess
+from multiprocessing import cpu_count
+
+min_version("5.19.0")
+phemulator_version = "0.0.1"
+
+configfile: "config/config.yaml"
+#include: "workflow/rules/common.smk"
+
+############################# PARAMS #####################################
+SUBSAMPLE_IDS = config['subsample_N']
+CHR = config["chr_num"]
+#DATA_DIR = "/proj/sens2017538/nobackup/ExomeSeq2ndRel/marcin/"
+DATA_DIR = "data/"
+DATA_PREFIX = "ukb23155_c22_b0_v1"
+OUTPUT_PREFIX = "sntst_GRCh38_norel_rnd" + str(SUBSAMPLE_IDS) + "_chr" + CHR
+IDS_TO_KEEP_FILE = DATA_DIR + "ids_to_keep.txt"
+OUTPUT_PATH = "results/"
+
+
+all_outputs = []
+
+        
+include: "workflow/stage2_prepare_data.sn"
+include: "workflow/stage3_simulate_phenotypes.sn"
+
+############################# PSEUDORULE #################################
+
+rule all:
+	input:
+		all_outputs

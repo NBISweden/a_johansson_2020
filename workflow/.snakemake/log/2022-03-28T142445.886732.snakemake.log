@@ -1,0 +1,3 @@
+SyntaxError in line 41 of /Users/kiero/Dropbox/WABI/Projects/Johansson_PP/a_johansson_2020/workflow/workflow/stage3_simulate_phenotypes.sn:
+Command must be given as string after the shell keyword. (stage3_simulate_phenotypes.sn, line 41)
+  File "/Users/kiero/Dropbox/WABI/Projects/Johansson_PP/a_johansson_2020/workflow/Snakefile", line 30, in <module>
