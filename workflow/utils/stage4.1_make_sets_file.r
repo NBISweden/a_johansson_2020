@@ -18,7 +18,7 @@ option_list = list(
   make_option(c("--chr"), type="character", default="chr22",
               help="chromosome to make gene regions file for"),
   make_option(c("--progress-step"), type="numeric", default = 0,
-              help = "show progress every N regions, if N=0 no progress bar will be shown"),
+              help = "show progress every N regions, if N=0 no progress bar will be shown")
 );
 
 opt_parser <- OptionParser(option_list=option_list)
