@@ -55,6 +55,7 @@ def validate_regions(bgen_file_path, my_chr, regions, threshold, num_common, num
                 variant = bgen.next()
                 chr = variant[0].chrom
 
+                # HACK
                 if variant[0].pos == 0:
                     variant[0].pos = int(variant[0].name.split('_')[3])
 
@@ -77,6 +78,28 @@ def validate_regions(bgen_file_path, my_chr, regions, threshold, num_common, num
                 sys.stderr.write(f"ERROR. Chromosome {chr}, position {position}: {e}. Skipping over...\n")
     valid_regions = [item for item in regions if item['is_valid'] != 'no']
     return(valid_regions)
+
+def fix_gt(gt):
+    # Step 1: Convert the array to integers
+    gt = np.array(gt)
+    gt = gt.astype(int)
+
+    # Step 2: Check and swap 0 and 2 if necessary, i.e. if minor and major allele are mixed up
+    count_0 = np.count_nonzero(gt == 0)
+    count_1 = np.count_nonzero(gt == 1)
+    count_2 = np.count_nonzero(gt == 2)
+
+    if count_2 > count_0:
+        gt[gt == 0] = 2
+        gt[gt == 2] = 0
+
+    # Step 3: Impute, i.e. replace any other values (missing data) with the most frequent value among 0, 1, and 2
+    most_frequent_value = np.argmax([count_0, count_1, count_2])
+
+    for i in range(len(gt)):
+        if gt[i] not in (0, 1, 2):
+            gt[i] = most_frequent_value
+    return(gt)
 
 if __name__ == '__main__':
 
@@ -121,12 +144,17 @@ if __name__ == '__main__':
             variant = bgen.get_variant(variant_name)[0]
             name = variant[0].name
             chr = variant[0].chrom
+            
+            # HACK
             if variant[0].pos == 0:
                 variant[0].pos = int(variant[0].name.split('_')[3])
             pos = variant[0].pos
+    
             type = 'rare'
             eff = np.random.normal(rare_eff_mean, rare_eff_std_dev)
             maf = get_maf(variant)
             tmp = pd.DataFrame([{'variant_name': name, 'chr': chr, 'pos': pos, 'type': type, 'eff': eff, 'maf': maf}])
             selected_variants = pd.concat([selected_variants, tmp], ignore_index=True)
+            gt = variant[1]
+            print(gt)
         print(selected_variants)    
