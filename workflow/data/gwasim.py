@@ -155,6 +155,6 @@ if __name__ == '__main__':
             maf = get_maf(variant)
             tmp = pd.DataFrame([{'variant_name': name, 'chr': chr, 'pos': pos, 'type': type, 'eff': eff, 'maf': maf}])
             selected_variants = pd.concat([selected_variants, tmp], ignore_index=True)
-            gt = variant[1]
+            gt = fix_gt(variant[1])
             print(gt)
         print(selected_variants)    
