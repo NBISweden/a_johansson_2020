@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import random
 import argparse
+import time
 
 def set_settings_from_command_line_args(S):
     """
@@ -22,7 +23,8 @@ def set_settings_from_command_line_args(S):
     parser.add_argument("--common_eff_std_dev", type=float, default=0.01, help="Std. deviation of effect size for common variants.")
     parser.add_argument("--err_mean", type=float, default=0.05, help="Mean for the error term in phenotype simulation.")
     parser.add_argument("--err_sd", type=float, default=0.01, help="Std. deviation for the error term in phenotype simulation.")
-
+    parser.add_argument("--num_sim", type=int, default=1, help="Number of simulations.")
+    
     args = parser.parse_args()
 
     # Access the singleton instance and set values
@@ -38,6 +40,7 @@ def set_settings_from_command_line_args(S):
     S.common_eff_std_dev = args.common_eff_std_dev
     S.err_mean = args.err_mean
     S.err_sd = args.err_sd
+    S.num_sim = args.num_sim
 
 class SettingsSingleton:
     """
@@ -56,6 +59,7 @@ class SettingsSingleton:
         common_eff_std_dev (float): Standard deviation of effect size for common variants.
         err_mean (float): Mean for the error term in phenotype simulation.
         err_sd (float): Standard deviation for the error term in phenotype simulation.
+        num_sim(int): Number of simulations to perform.
     """
     _instance = None
 
@@ -80,6 +84,7 @@ class SettingsSingleton:
         self.common_eff_std_dev = 0.01
         self.err_mean = 0.05
         self.err_sd = 0.01
+        self.num_sim = 1
 
         
 def get_maf(variant):
@@ -313,13 +318,28 @@ if __name__ == '__main__':
     set_settings_from_command_line_args(S)
     
     # Read file with regions
-    print("Reading regions...")
+    print("Reading regions file...", end = ' ')
+    start_time = time.time()
     regions = read_bed_file(S)
+    exec_time = round(time.time() - start_time, 2)
+    print(f" done in {exec_time}s.")
     n_reg = len(regions)
-    print(f"Validating {n_reg} regions on chromosome {S.my_chr} found in {S.bed_regions_path}...")
+    print(f"Validating {n_reg} regions on chromosome {S.my_chr} from {S.bed_regions_path}...", end = ' ')
+    start_time = time.time()
     valid_regions = validate_regions(regions, S)
+    exec_time = round(time.time() - start_time, 2)
+    print(f" done in {exec_time}s.")
     print(f"Found {len(valid_regions)} region(s) matching simulation criteria.")
-    for region in valid_regions:
+    print(f"Drawing {S.num_sim} region(s) for simulation (w. replacement)", end = ' ')
+    start_time = time.time()
+    sim_regions = random.choices(validate_regions(regions, S), k=S.num_sim)
+    exec_time = round(time.time() - start_time, 2)
+    print(f" done in {exec_time}s.")
+
+    cnt = 1
+    for region in sim_regions:
+        start_time = time.time()
+        print(f"Performing simulation {cnt} of {S.num_sim}...")
         print(f"\t - processing region {region['region_name']}")
         print(f"\t\t - scanning variants in the region")
         with PyBGEN(S.bgen_file_path) as bgen:
@@ -328,5 +348,10 @@ if __name__ == '__main__':
             #print(variants)
             print(f"\t\t - simulating phenotype")
             sim_result = simulate_phenotype(bgen, variants, S)
-            print(sim_result)
-
+            #print(sim_result)
+            y_mean = round(np.mean(sim_result['y']), 2)
+            y_sd = round(np.std(sim_result['y']), 2)
+            print(f"\t\t - simulated phenotype mean = {y_mean}, std. dev = {y_sd}")
+            exec_time = round(time.time() - start_time, 2)
+            print(f"\t\t - done in {exec_time}s.")
+        cnt += 1
