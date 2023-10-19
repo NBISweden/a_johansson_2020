@@ -6,6 +6,23 @@ import random
 from multiprocessing import Pool
 
 class SettingsSingleton:
+    """
+    Singleton class to store user-defined settings.
+
+    Attributes:
+        bed_regions_path (str): Path to the BED file containing region data.
+        bgen_file_path (str): Path to the BGEN file.
+        threshold (float): Alleles with a frequency below this threshold are considered rare.
+        my_chr (str): Chromosome of interest.
+        num_common (int): Number of common variant markers used for simulation.
+        num_rare (int): Number of rare variant markers used for simulation.
+        rare_eff_mean (float): Mean effect size for rare variants.
+        rare_eff_std_dev (float): Standard deviation of effect size for rare variants.
+        common_eff_mean (float): Mean effect size for common variants.
+        common_eff_std_dev (float): Standard deviation of effect size for common variants.
+        err_mean (float): Mean for the error term in phenotype simulation.
+        err_sd (float): Standard deviation for the error term in phenotype simulation.
+    """
     _instance = None
 
     def __new__(cls):
@@ -29,8 +46,18 @@ class SettingsSingleton:
         self.common_eff_std_dev = 0.01
         self.err_mean = 0.05
         self.err_sd = 0.01
+
         
 def get_maf(variant):
+    """
+    Calculate Minor Allele Frequency (MAF) from variant data.
+
+    Args:
+        variant (object): Variant data.
+
+    Returns:
+        float: MAF value.
+    """
     gt = list(variant[1])
     num_alleles = 2 * len(gt)
     num_aa = gt.count(0.0)
@@ -45,6 +72,15 @@ def get_maf(variant):
     return(f_minor)
 
 def read_bed_file(S):
+    """
+    Read and parse region data from a BED file.
+
+    Args:
+        S (SettingsSingleton): Singleton object containing user-defined settings.
+
+    Returns:
+        list: A list of dictionaries containing region information.
+    """
     filter_chr = S.my_chr
     file_path = S.bed_regions_path
     data = []  # Initialize a list to store the data
@@ -76,6 +112,16 @@ def read_bed_file(S):
     return data
 
 def validate_regions(regions, S):
+    """
+    Validate regions based on simulation criteria.
+
+    Args:
+        regions (list): List of region dictionaries.
+        S (SettingsSingleton): Singleton object containing user-defined settings.
+
+    Returns:
+        list: A filtered list of validated regions.
+    """
     bgen_file_path = S.bgen_file_path
     my_chr = S.my_chr
     threshold = S.threshold
@@ -114,6 +160,15 @@ def validate_regions(regions, S):
     return(valid_regions)
 
 def fix_gt(gt):
+    """
+    Fix genotype data.
+
+    Args:
+        gt (numpy.ndarray): Genotype data.
+
+    Returns:
+        numpy.ndarray: Fixed genotype data.
+    """
     # Step 1: Convert the array to integers
     gt = np.array(gt)
     gt = gt.astype(int)
@@ -136,6 +191,17 @@ def fix_gt(gt):
     return(gt)
 
 def select_variants(bgen, region, S):
+    """
+    Select variants for simulation.
+
+    Args:
+        bgen (PyBGEN): PyBGEN object for reading BGEN data.
+        region (dict): Region dictionary containing region information.
+        S (SettingsSingleton): Singleton object containing user-defined settings.
+
+    Returns:
+        dict: A dictionary containing selected variants and metadata for simulation.
+    """
     filter_chr = S.my_chr
     threshold = S.threshold
     selected_variants = []
@@ -163,6 +229,18 @@ def select_variants(bgen, region, S):
     return(result)
 
 def simulate_phenotype(bgen, variants, S):
+    """
+    Simulate phenotypes based on selected variants.
+
+    Args:
+        bgen (PyBGEN): PyBGEN object for reading BGEN data.
+        variants (dict): Dictionary containing selected variants for simulation.
+        S (SettingsSingleton): Singleton object containing user-defined settings.
+
+    Returns:
+        dict: A dictionary containing simulated phenotype data and metadata.
+    """
+
    region = variants['region']
    selected = variants['selected_variants']
    variants_table = pd.DataFrame(columns=['variant_name', 'chr', 'pos', 'type', 'eff', 'maf'])
