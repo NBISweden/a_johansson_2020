@@ -152,11 +152,49 @@ def select_variants(bgen, region, S):
             rare.append(variant[0].name)
         else:
             common.append(variant[0].name)
+            
+    # Randomly select variants
+    sel_rare = random.sample(rare, num_rare)
+    sel_common = random.sample(common, num_common)
+    
     result = {}
     result['region'] = region
-    result['selected_variants'] = rare + common
+    result['selected_variants'] = sel_rare + sel_common
     return(result)
-    
+
+def simulate_phenotype(bgen, variants, S):
+   region = variants['region']
+   selected = variants['selected_variants']
+   variants_table = pd.DataFrame(columns=['variant_name', 'chr', 'pos', 'type', 'eff', 'maf'])
+   y = np.zeros(bgen.nb_samples)    # Create an empty array for phenotypes
+   for variant_name in selected:
+       variant = bgen.get_variant(variant_name)[0]
+       name = variant[0].name
+       chr = variant[0].chrom
+       
+       # HACK
+       if variant[0].pos == 0:
+           variant[0].pos = int(variant[0].name.split('_')[3])
+       pos = variant[0].pos
+
+       maf = get_maf(variant)
+       if (maf <= S.threshold):
+           type = 'rare'
+           eff = np.random.normal(S.rare_eff_mean, S.rare_eff_std_dev)
+       else:
+           type = 'common'
+           eff = np.random.normal(S.common_eff_mean, S.common_eff_std_dev)
+           
+       tmp = pd.DataFrame([{'variant_name': name, 'chr': chr, 'pos': pos, 'type': type, 'eff': eff, 'maf': maf}])
+       variants_table = pd.concat([variants_table, tmp], ignore_index=True)
+       gt = fix_gt(variant[1])
+       y_contrib = eff * gt
+       #print(y_contrib[y_contrib > 0]) # sanity check
+       y = y + y_contrib
+   y = y + np.random.normal(S.err_mean, S.err_sd)
+   result = {'region': region, 'variants_data': variants_table, 'y': y}     
+   return(result)
+     
 if __name__ == '__main__':
     # User-defined variables are stored in a singleton
     S = SettingsSingleton()
@@ -165,42 +203,17 @@ if __name__ == '__main__':
     print("Reading regions...")
     regions = read_bed_file(S)
     n_reg = len(regions)
-    print(f"Validating {n_reg} regions...")
+    print(f"Validating {n_reg} regions on chromosome {S.my_chr} found in {S.bed_regions_path}...")
     valid_regions = validate_regions(regions, S)
     print(f"Found {len(valid_regions)} region(s) matching simulation criteria.")
     for region in valid_regions:
         print(f"\t - processing region {region['region_name']}")
+        print(f"\t\t - scanning variants in the region")
         with PyBGEN(S.bgen_file_path) as bgen:
+            print(f"\t\t - selecting variants")
             variants = select_variants(bgen, region, S)
-            print(variants)
+            #print(variants)
+            print(f"\t\t - simulating phenotype")
+            sim_result = simulate_phenotype(bgen, variants, S)
+            print(sim_result)
 
-# ########    
-#    selected_variants = pd.DataFrame(columns=['variant_name', 'chr', 'pos', 'type', 'eff', 'maf'])
-#    with PyBGEN(bgen_file_path) as bgen:
-#        y = np.zeros(bgen.nb_samples)    # Create an empty array for phenotypes
-#        for variant_name in selected:
-#            variant = bgen.get_variant(variant_name)[0]
-#            name = variant[0].name
-#            chr = variant[0].chrom
-#            
-#            # HACK
-#            if variant[0].pos == 0:
-#                variant[0].pos = int(variant[0].name.split('_')[3])
-#            pos = variant[0].pos
-#
-#            maf = get_maf(variant)
-#            if (maf <= threshold):
-#                type = 'rare'
-#                eff = np.random.normal(rare_eff_mean, rare_eff_std_dev)
-#            else:
-#                type = 'common'
-#                eff = np.random.normal(common_eff_mean, common_eff_std_dev)
-#                
-#            tmp = pd.DataFrame([{'variant_name': name, 'chr': chr, 'pos': pos, 'type': type, 'eff': eff, 'maf': maf}])
-#            selected_variants = pd.concat([selected_variants, tmp], ignore_index=True)
-#            gt = fix_gt(variant[1])
-#            y_contrib = eff * gt
-#            #print(y_contrib[y_contrib > 0]) # sanity check
-#            y = y + y_contrib
-#        y = y + random.sample(err_mean, err_sd)
-#        print(selected_variants)    
