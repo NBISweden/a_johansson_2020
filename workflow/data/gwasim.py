@@ -5,6 +5,31 @@ import pandas as pd
 import random
 from multiprocessing import Pool
 
+class SettingsSingleton:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(SettingsSingleton, cls).__new__(cls)
+            cls._instance.init_settings()
+        return cls._instance
+
+    def init_settings(self):
+        # Define the path to your regions bed file and BGEN file
+        #self.bed_regions_path = "cds_chr_fixed_pruned.bed"
+        self.bed_regions_path = "cds_test.bed"
+        self.bgen_file_path = "Rum_recoded_repos_norel_rnd3000_chr22.bgen"
+        self.threshold = 0.05
+        self.my_chr = "1"
+        self.num_common = 1
+        self.num_rare = 2
+        self.rare_eff_mean = 2
+        self.rare_eff_std_dev = 0.3
+        self.common_eff_mean = 0.3
+        self.common_eff_std_dev = 0.01
+        self.err_mean = 0.05
+        self.err_sd = 0.01
+        
 def get_maf(variant):
     gt = list(variant[1])
     num_alleles = 2 * len(gt)
@@ -19,9 +44,11 @@ def get_maf(variant):
     #    print("f_minor: ", f_minor, ", f_major: ", f_major)
     return(f_minor)
 
-def read_bed_file(file_path, filter_chr = "all"):
+def read_bed_file(S):
+    filter_chr = S.my_chr
+    file_path = S.bed_regions_path
     data = []  # Initialize a list to store the data
-
+  
     with open(file_path, 'r') as bed_file:
         for line in bed_file:
             # Split the line into fields using tab as the delimiter
@@ -30,7 +57,7 @@ def read_bed_file(file_path, filter_chr = "all"):
             # Ensure the line has the correct number of fields (4)
             if len(fields) == 4:
                 chromosome, start, stop, region_name = fields
-                if filter_chr == "all" or chromosome == filter_chr: 
+                if (filter_chr == "all" or chromosome == filter_chr): 
 	                # Convert start and stop to integers if needed
 	                start = int(start)
 	                stop = int(stop)
@@ -45,9 +72,16 @@ def read_bed_file(file_path, filter_chr = "all"):
                     	'num_common': 0,
                     	'is_valid': 'no'
 	                })
+    #print(data)
     return data
 
-def validate_regions(bgen_file_path, my_chr, regions, threshold, num_common, num_rare):
+def validate_regions(regions, S):
+    bgen_file_path = S.bgen_file_path
+    my_chr = S.my_chr
+    threshold = S.threshold
+    num_common = S.num_common
+    num_rare = S.num_rare
+    
     with PyBGEN(bgen_file_path) as bgen:
         #print("There are", bgen.nb_variants, "variants and", bgen.nb_samples, "samples in the file.")
         while True:
@@ -101,60 +135,72 @@ def fix_gt(gt):
             gt[i] = most_frequent_value
     return(gt)
 
-if __name__ == '__main__':
-
-    # User-defined variables
-    # Define the path to your regions bed file and BGEN file
-    #bed_regions_path = "cds_chr_fixed_pruned.bed"
-    bed_regions_path = "cds_test.bed"
-    bgen_file_path = "Rum_recoded_repos_norel_rnd3000_chr22.bgen"
-    threshold = 0.05 	# Alleles with frequency below this threshold are considered rare
-    my_chr = "1" 	    # chromosome of interest
-    num_common = 1      # number of common variant markers used for simulation
-    num_rare = 2        # number of rare variant markers used for simulation 
-    rare_eff_mean = 2 
-    rare_eff_std_dev = 0.3
-
-    # Read file with regions
-    print("Reading regions...")
-    regions = read_bed_file(bed_regions_path, filter_chr = 'chr' + my_chr)
-    n_reg = len(regions)
-    print(f"Validating {n_reg} regions...")
-    valid_regions = validate_regions(bgen_file_path, my_chr, regions, threshold, num_common, num_rare)
-    for region in valid_regions:
-    	print(region)
-    start = valid_regions[0]['start']
-    end = valid_regions[0]['stop']
-    common = []
+def select_variants(bgen, region, S):
+    filter_chr = S.my_chr
+    threshold = S.threshold
+    selected_variants = []
+    num_rare = S.num_rare
+    num_common = S.num_common
+    start = region['start']
+    stop = region['stop']
     rare = []
-    with PyBGEN(bgen_file_path) as bgen:
-        for variant in bgen.iter_variants_in_region(my_chr, start, end):
-            maf = get_maf(variant)
-            if (maf <= threshold):
-                rare.append(variant[0].name)
-            else:
-                common.append(variant[0].name)
+    common = []
+    for variant in bgen.iter_variants_in_region(filter_chr, start, stop):
+        #print(variant)
+        maf = get_maf(variant)
+        if (maf <= threshold):
+            rare.append(variant[0].name)
+        else:
+            common.append(variant[0].name)
     result = {}
     result['region'] = region
-    selected_rare = random.sample(rare, num_rare)
-    selected_common = random.sample(common, num_common)
-    selected_variants = pd.DataFrame(columns=['variant_name', 'chr', 'pos', 'type', 'eff', 'maf'])
-    with PyBGEN(bgen_file_path) as bgen:
-        for variant_name in selected_rare:
-            variant = bgen.get_variant(variant_name)[0]
-            name = variant[0].name
-            chr = variant[0].chrom
-            
-            # HACK
-            if variant[0].pos == 0:
-                variant[0].pos = int(variant[0].name.split('_')[3])
-            pos = variant[0].pos
+    result['selected_variants'] = rare + common
+    return(result)
     
-            type = 'rare'
-            eff = np.random.normal(rare_eff_mean, rare_eff_std_dev)
-            maf = get_maf(variant)
-            tmp = pd.DataFrame([{'variant_name': name, 'chr': chr, 'pos': pos, 'type': type, 'eff': eff, 'maf': maf}])
-            selected_variants = pd.concat([selected_variants, tmp], ignore_index=True)
-            gt = fix_gt(variant[1])
-            print(gt)
-        print(selected_variants)    
+if __name__ == '__main__':
+    # User-defined variables are stored in a singleton
+    S = SettingsSingleton()
+    
+    # Read file with regions
+    print("Reading regions...")
+    regions = read_bed_file(S)
+    n_reg = len(regions)
+    print(f"Validating {n_reg} regions...")
+    valid_regions = validate_regions(regions, S)
+    print(f"Found {len(valid_regions)} region(s) matching simulation criteria.")
+    for region in valid_regions:
+        print(f"\t - processing region {region['region_name']}")
+        with PyBGEN(S.bgen_file_path) as bgen:
+            variants = select_variants(bgen, region, S)
+            print(variants)
+
+# ########    
+#    selected_variants = pd.DataFrame(columns=['variant_name', 'chr', 'pos', 'type', 'eff', 'maf'])
+#    with PyBGEN(bgen_file_path) as bgen:
+#        y = np.zeros(bgen.nb_samples)    # Create an empty array for phenotypes
+#        for variant_name in selected:
+#            variant = bgen.get_variant(variant_name)[0]
+#            name = variant[0].name
+#            chr = variant[0].chrom
+#            
+#            # HACK
+#            if variant[0].pos == 0:
+#                variant[0].pos = int(variant[0].name.split('_')[3])
+#            pos = variant[0].pos
+#
+#            maf = get_maf(variant)
+#            if (maf <= threshold):
+#                type = 'rare'
+#                eff = np.random.normal(rare_eff_mean, rare_eff_std_dev)
+#            else:
+#                type = 'common'
+#                eff = np.random.normal(common_eff_mean, common_eff_std_dev)
+#                
+#            tmp = pd.DataFrame([{'variant_name': name, 'chr': chr, 'pos': pos, 'type': type, 'eff': eff, 'maf': maf}])
+#            selected_variants = pd.concat([selected_variants, tmp], ignore_index=True)
+#            gt = fix_gt(variant[1])
+#            y_contrib = eff * gt
+#            #print(y_contrib[y_contrib > 0]) # sanity check
+#            y = y + y_contrib
+#        y = y + random.sample(err_mean, err_sd)
+#        print(selected_variants)    
