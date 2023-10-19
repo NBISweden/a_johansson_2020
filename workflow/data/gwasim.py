@@ -3,7 +3,41 @@ from pybgen import PyBGEN
 import numpy as np
 import pandas as pd
 import random
-from multiprocessing import Pool
+import argparse
+
+def set_settings_from_command_line_args(S):
+    """
+    Set settings in the SettingsSingleton (S) based on command-line arguments.
+    """
+    parser = argparse.ArgumentParser(description="Set simulation parameters.")
+    parser.add_argument("--bed_regions_path", type=str, default="cds_test.bed", help="Path to the BED file.")
+    parser.add_argument("--bgen_file_path", type=str, default="Rum_recoded_repos_norel_rnd3000_chr22.bgen", help="Path to the BGEN file.")
+    parser.add_argument("--threshold", type=float, default=0.05, help="Threshold for MAF rare vs. common.")
+    parser.add_argument("--my_chr", type=str, default="1", help="Chromosome of interest.")
+    parser.add_argument("--num_common", type=int, default=1, help="Number of common variants for simulation.")
+    parser.add_argument("--num_rare", type=int, default=2, help="Number of rare variants for simulation.")
+    parser.add_argument("--rare_eff_mean", type=float, default=2, help="Mean effect size for rare variants.")
+    parser.add_argument("--rare_eff_std_dev", type=float, default=0.3, help="Std. deviation of effect size for rare variants.")
+    parser.add_argument("--common_eff_mean", type=float, default=0.3, help="Mean effect size for common variants.")
+    parser.add_argument("--common_eff_std_dev", type=float, default=0.01, help="Std. deviation of effect size for common variants.")
+    parser.add_argument("--err_mean", type=float, default=0.05, help="Mean for the error term in phenotype simulation.")
+    parser.add_argument("--err_sd", type=float, default=0.01, help="Std. deviation for the error term in phenotype simulation.")
+
+    args = parser.parse_args()
+
+    # Access the singleton instance and set values
+    S.bed_regions_path = args.bed_regions_path
+    S.bgen_file_path = args.bgen_file_path
+    S.threshold = args.threshold
+    S.my_chr = args.my_chr
+    S.num_common = args.num_common
+    S.num_rare = args.num_rare
+    S.rare_eff_mean = args.rare_eff_mean
+    S.rare_eff_std_dev = args.rare_eff_std_dev
+    S.common_eff_mean = args.common_eff_mean
+    S.common_eff_std_dev = args.common_eff_std_dev
+    S.err_mean = args.err_mean
+    S.err_sd = args.err_sd
 
 class SettingsSingleton:
     """
@@ -241,41 +275,42 @@ def simulate_phenotype(bgen, variants, S):
         dict: A dictionary containing simulated phenotype data and metadata.
     """
 
-   region = variants['region']
-   selected = variants['selected_variants']
-   variants_table = pd.DataFrame(columns=['variant_name', 'chr', 'pos', 'type', 'eff', 'maf'])
-   y = np.zeros(bgen.nb_samples)    # Create an empty array for phenotypes
-   for variant_name in selected:
-       variant = bgen.get_variant(variant_name)[0]
-       name = variant[0].name
-       chr = variant[0].chrom
+    region = variants['region']
+    selected = variants['selected_variants']
+    variants_table = pd.DataFrame(columns=['variant_name', 'chr', 'pos', 'type', 'eff', 'maf'])
+    y = np.zeros(bgen.nb_samples)    # Create an empty array for phenotypes
+    for variant_name in selected:
+        variant = bgen.get_variant(variant_name)[0]
+        name = variant[0].name
+        chr = variant[0].chrom
        
-       # HACK
-       if variant[0].pos == 0:
-           variant[0].pos = int(variant[0].name.split('_')[3])
-       pos = variant[0].pos
+        # HACK
+        if variant[0].pos == 0:
+            variant[0].pos = int(variant[0].name.split('_')[3])
+        pos = variant[0].pos
 
-       maf = get_maf(variant)
-       if (maf <= S.threshold):
-           type = 'rare'
-           eff = np.random.normal(S.rare_eff_mean, S.rare_eff_std_dev)
-       else:
-           type = 'common'
-           eff = np.random.normal(S.common_eff_mean, S.common_eff_std_dev)
+        maf = get_maf(variant)
+        if (maf <= S.threshold):
+            type = 'rare'
+            eff = np.random.normal(S.rare_eff_mean, S.rare_eff_std_dev)
+        else:
+            type = 'common'
+            eff = np.random.normal(S.common_eff_mean, S.common_eff_std_dev)
            
-       tmp = pd.DataFrame([{'variant_name': name, 'chr': chr, 'pos': pos, 'type': type, 'eff': eff, 'maf': maf}])
-       variants_table = pd.concat([variants_table, tmp], ignore_index=True)
-       gt = fix_gt(variant[1])
-       y_contrib = eff * gt
-       #print(y_contrib[y_contrib > 0]) # sanity check
-       y = y + y_contrib
-   y = y + np.random.normal(S.err_mean, S.err_sd)
-   result = {'region': region, 'variants_data': variants_table, 'y': y}     
-   return(result)
+        tmp = pd.DataFrame([{'variant_name': name, 'chr': chr, 'pos': pos, 'type': type, 'eff': eff, 'maf': maf}])
+        variants_table = pd.concat([variants_table, tmp], ignore_index=True)
+        gt = fix_gt(variant[1])
+        y_contrib = eff * gt
+        #print(y_contrib[y_contrib > 0]) # sanity check
+        y = y + y_contrib
+    y = y + np.random.normal(S.err_mean, S.err_sd)
+    result = {'region': region, 'variants_data': variants_table, 'y': y}     
+    return(result)
      
 if __name__ == '__main__':
     # User-defined variables are stored in a singleton
     S = SettingsSingleton()
+    set_settings_from_command_line_args(S)
     
     # Read file with regions
     print("Reading regions...")
