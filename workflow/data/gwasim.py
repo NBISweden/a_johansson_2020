@@ -5,6 +5,7 @@ import pandas as pd
 import random
 import argparse
 import time
+import multiprocessing
 
 def set_settings_from_command_line_args(S):
     """
@@ -150,7 +151,7 @@ def read_bed_file(S):
     #print(data)
     return data
 
-def validate_regions(regions, S):
+def validate_regions(bgen, regions, S):
     """
     Validate regions based on simulation criteria.
 
@@ -161,40 +162,38 @@ def validate_regions(regions, S):
     Returns:
         list: A filtered list of validated regions.
     """
-    bgen_file_path = S.bgen_file_path
     my_chr = S.my_chr
     threshold = S.threshold
     num_common = S.num_common
     num_rare = S.num_rare
     
-    with PyBGEN(bgen_file_path) as bgen:
-        #print("There are", bgen.nb_variants, "variants and", bgen.nb_samples, "samples in the file.")
-        while True:
-            try:
-                variant = bgen.next()
-                chr = variant[0].chrom
+    #print("There are", bgen.nb_variants, "variants and", bgen.nb_samples, "samples in the file.")
+    while True:
+        try:
+            variant = bgen.next()
+            chr = variant[0].chrom
 
-                # HACK
-                if variant[0].pos == 0:
-                    variant[0].pos = int(variant[0].name.split('_')[3])
+            # HACK
+            if variant[0].pos == 0:
+                variant[0].pos = int(variant[0].name.split('_')[3])
 
-                position = variant[0].pos
+            position = variant[0].pos
 
-                if chr == my_chr:
-                    for region in regions:
-                        if region['start'] <= position <= region['stop']:
-                            maf = get_maf(variant)
-                            if 0 < maf <= threshold:
-                                region['num_rare'] += 1
-                            elif maf > threshold:
-                                region['num_common'] += 1
+            if chr == my_chr:
+                for region in regions:
+                    if region['start'] <= position <= region['stop']:
+                        maf = get_maf(variant)
+                        if 0 < maf <= threshold:
+                            region['num_rare'] += 1
+                        elif maf > threshold:
+                            region['num_common'] += 1
 
-                        if region['num_common'] >= num_common and region['num_rare'] >= num_rare:
-                            region['is_valid'] = 'yes'
-            except StopIteration:
-                break
-            except Exception as e:
-                sys.stderr.write(f"ERROR. Chromosome {chr}, position {position}: {e}. Skipping over...\n")
+                    if region['num_common'] >= num_common and region['num_rare'] >= num_rare:
+                        region['is_valid'] = 'yes'
+        except StopIteration:
+            break
+        except Exception as e:
+            sys.stderr.write(f"ERROR. Chromosome {chr}, position {position}: {e}. Skipping over...\n")
     valid_regions = [item for item in regions if item['is_valid'] != 'no']
     return(valid_regions)
 
@@ -324,25 +323,25 @@ if __name__ == '__main__':
     exec_time = round(time.time() - start_time, 2)
     print(f" done in {exec_time}s.")
     n_reg = len(regions)
-    print(f"Validating {n_reg} regions on chromosome {S.my_chr} from {S.bed_regions_path}...", end = ' ')
-    start_time = time.time()
-    valid_regions = validate_regions(regions, S)
-    exec_time = round(time.time() - start_time, 2)
-    print(f" done in {exec_time}s.")
-    print(f"Found {len(valid_regions)} region(s) matching simulation criteria.")
-    print(f"Drawing {S.num_sim} region(s) for simulation (w. replacement)", end = ' ')
-    start_time = time.time()
-    sim_regions = random.choices(validate_regions(regions, S), k=S.num_sim)
-    exec_time = round(time.time() - start_time, 2)
-    print(f" done in {exec_time}s.")
-
-    cnt = 1
-    for region in sim_regions:
+    with PyBGEN(S.bgen_file_path) as bgen:
+        print(f"Validating {n_reg} regions on chromosome {S.my_chr} from {S.bed_regions_path}...", end = ' ')
         start_time = time.time()
-        print(f"Performing simulation {cnt} of {S.num_sim}...")
-        print(f"\t - processing region {region['region_name']}")
-        print(f"\t\t - scanning variants in the region")
-        with PyBGEN(S.bgen_file_path) as bgen:
+        valid_regions = validate_regions(bgen, regions, S)
+        exec_time = round(time.time() - start_time, 2)
+        print(f" done in {exec_time}s.")
+        print(f"Found {len(valid_regions)} region(s) matching simulation criteria.")
+        print(f"Drawing {S.num_sim} region(s) for simulation (w. replacement)", end = ' ')
+        start_time = time.time()
+        sim_regions = random.choices(valid_regions, k=S.num_sim)
+        exec_time = round(time.time() - start_time, 2)
+        print(f" done in {exec_time}s.")
+    
+        cnt = 1
+        for region in sim_regions:
+            start_time = time.time()
+            print(f"Performing simulation {cnt} of {S.num_sim}...")
+            print(f"\t - processing region {region['region_name']}")
+            print(f"\t\t - scanning variants in the region")
             print(f"\t\t - selecting variants")
             variants = select_variants(bgen, region, S)
             #print(variants)
@@ -354,4 +353,4 @@ if __name__ == '__main__':
             print(f"\t\t - simulated phenotype mean = {y_mean}, std. dev = {y_sd}")
             exec_time = round(time.time() - start_time, 2)
             print(f"\t\t - done in {exec_time}s.")
-        cnt += 1
+            cnt += 1
